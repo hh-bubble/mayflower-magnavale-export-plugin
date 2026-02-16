@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(composer:*)",
+      "Bash(php:*)",
+      "Bash(brew --version:*)",
+      "Bash(/opt/homebrew/bin/brew install:*)",
+      "Bash(/opt/homebrew/bin/composer install --no-dev)",
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")"
+    ]
+  }
+}

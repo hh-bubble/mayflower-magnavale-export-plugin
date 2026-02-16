@@ -1,0 +1,12 @@
+{
+    "name": "bubble-design/mayflower-magnavale-export",
+    "description": "Exports WooCommerce orders as CSV files in Magnavale's required format and uploads them via SFTP.",
+    "type": "wordpress-plugin",
+    "require": {
+        "php": ">=7.4",
+        "phpseclib/phpseclib": "~3.0"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

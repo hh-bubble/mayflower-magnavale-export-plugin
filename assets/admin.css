@@ -1,0 +1,81 @@
+/**
+ * Mayflower Magnavale Export — Admin Styles
+ *
+ * Minimal styling for the plugin's admin pages and order list column.
+ * Keeps everything looking native to WordPress.
+ *
+ * @package MayflowerMagnavaleExport
+ */
+
+/* ========================================
+   Export Status Badges
+   Used in orders list column and export log
+   ======================================== */
+
+.mme-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
+.mme-exported {
+    background: #d4edda;
+    color: #155724;
+}
+
+.mme-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.mme-failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.mme-none {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+/* ========================================
+   Settings Page
+   ======================================== */
+
+.mme-settings-wrap .form-table th {
+    width: 180px;
+}
+
+.mme-settings-wrap .regular-text {
+    width: 350px;
+}
+
+/* ========================================
+   Status Boxes (Manual Export page)
+   ======================================== */
+
+.mme-status-box {
+    border-radius: 4px;
+}
+
+.mme-status-box h3 {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* ========================================
+   Export Log Table
+   ======================================== */
+
+.mme-log-wrap .wp-list-table td {
+    vertical-align: middle;
+}
+
+.mme-log-wrap .wp-list-table td small {
+    color: #666;
+    word-break: break-all;
+}
