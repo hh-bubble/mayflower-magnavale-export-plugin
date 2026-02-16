@@ -337,7 +337,7 @@ function mme_run_export() {
         ] );
 
         // Send email alert to admin about the failure
-        $admin_email = get_option( 'mme_alert_email', get_option( 'admin_email' ) );
+        $admin_email = get_option( 'mme_alert_email', 'holly@bubbledesign.co.uk' );
         wp_mail(
             $admin_email,
             '[Mayflower Export] SFTP Upload Failed',

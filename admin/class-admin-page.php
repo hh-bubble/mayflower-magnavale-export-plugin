@@ -83,7 +83,7 @@ class MME_Admin_Page {
             echo '<p>Email address to receive failure alerts.</p>';
         }, 'mayflower-magnavale' );
 
-        $this->add_text_field( 'mme_alert_email', 'Alert Email', get_option( 'admin_email' ), false, 'mme_alert_section' );
+        $this->add_text_field( 'mme_alert_email', 'Alert Email', 'holly@bubbledesign.co.uk', false, 'mme_alert_section' );
 
         // ---- Register all settings with appropriate sanitize callbacks ----
 
