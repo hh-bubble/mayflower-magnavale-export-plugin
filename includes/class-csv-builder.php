@@ -165,14 +165,6 @@ class MME_CSV_Builder {
     }
 
     /**
-     * Convert an array of row arrays to a CSV string.
-     * No header row. Uses comma delimiter. Uses \r\n line endings
-     * (Windows-style, as expected by Magnavale's system).
-     *
-     * @param array $rows Array of row arrays
-     * @return string CSV content
-     */
-    /**
      * Sanitise a cell value to prevent CSV injection (Excel formula injection).
      *
      * If a cell starts with =, +, -, or @, Excel/LibreOffice may interpret it
@@ -190,6 +182,14 @@ class MME_CSV_Builder {
         return $value;
     }
 
+    /**
+     * Convert an array of row arrays to a CSV string.
+     * No header row. Uses comma delimiter. Uses \r\n line endings
+     * (Windows-style, as expected by Magnavale's system).
+     *
+     * @param array $rows Array of row arrays
+     * @return string CSV content
+     */
     private function rows_to_csv( array $rows ) {
         $output = fopen( 'php://temp', 'r+' );
 

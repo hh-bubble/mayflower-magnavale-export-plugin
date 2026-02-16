@@ -154,8 +154,6 @@ class MME_Delivery_Date_Calculator {
             case 1: // Monday
                 if ( $before_cutoff ) {
                     // Window A → despatch Tuesday (tomorrow)
-                    $despatch->modify( 'next Tuesday' );
-                    // If today IS Tuesday logic... let's be explicit:
                     $despatch = $this->get_next_weekday( $order_datetime, 2 ); // Tuesday
                 } else {
                     // Window B → despatch Wednesday

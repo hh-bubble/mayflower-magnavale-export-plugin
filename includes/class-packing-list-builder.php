@@ -172,12 +172,6 @@ class MME_Packing_List_Builder {
     }
 
     /**
-     * Convert rows to CSV string with Windows line endings.
-     *
-     * @param array $rows Array of row arrays
-     * @return string CSV content
-     */
-    /**
      * Sanitise a cell value to prevent CSV injection (Excel formula injection).
      *
      * @param string $value The raw cell value
@@ -191,6 +185,12 @@ class MME_Packing_List_Builder {
         return $value;
     }
 
+    /**
+     * Convert rows to CSV string with Windows line endings.
+     *
+     * @param array $rows Array of row arrays
+     * @return string CSV content
+     */
     private function rows_to_csv( array $rows ) {
         $output = fopen( 'php://temp', 'r+' );
 
