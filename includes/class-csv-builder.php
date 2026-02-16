@@ -133,8 +133,16 @@ class MME_CSV_Builder {
         $address_1 = $order->get_shipping_address_1() ?: $order->get_billing_address_1();
         $address_2 = $order->get_shipping_address_2() ?: $order->get_billing_address_2();
         $city      = $order->get_shipping_city()      ?: $order->get_billing_city();
-        $county    = $order->get_shipping_state()      ?: $order->get_billing_state();
         $postcode  = $order->get_shipping_postcode()   ?: $order->get_billing_postcode();
+
+        // County — WooCommerce's state field can contain the country code (GB/UK)
+        // instead of an actual county, especially for UK orders where the county
+        // field is optional. Filter these out so Magnavale gets a real county or blank.
+        $county  = $order->get_shipping_state() ?: $order->get_billing_state();
+        $country = $order->get_shipping_country() ?: $order->get_billing_country();
+        if ( $county && $country && ( strtoupper( $county ) === strtoupper( $country ) || strtoupper( $county ) === 'UK' || strtoupper( $county ) === 'GB' ) ) {
+            $county = '';
+        }
 
         // Phone and email — always from billing
         $phone = $order->get_billing_phone() ?: '';
