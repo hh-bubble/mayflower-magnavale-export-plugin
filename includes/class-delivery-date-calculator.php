@@ -53,9 +53,18 @@ class MME_Delivery_Date_Calculator {
      */
     public function __construct() {
         $cutoff_time = get_option( 'mme_cutoff_time', '16:00' );
-        $parts = explode( ':', $cutoff_time );
-        $this->cutoff_hour   = intval( $parts[0] );
-        $this->cutoff_minute = intval( $parts[1] ?? 0 );
+        $parts  = explode( ':', $cutoff_time );
+        $hour   = intval( $parts[0] ?? 0 );
+        $minute = intval( $parts[1] ?? 0 );
+
+        // Validate range — fall back to 16:00 if invalid
+        if ( $hour < 0 || $hour > 23 || $minute < 0 || $minute > 59 ) {
+            $hour   = 16;
+            $minute = 0;
+        }
+
+        $this->cutoff_hour   = $hour;
+        $this->cutoff_minute = $minute;
     }
 
     /**

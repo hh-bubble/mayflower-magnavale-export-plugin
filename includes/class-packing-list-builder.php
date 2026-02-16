@@ -150,18 +150,18 @@ class MME_Packing_List_Builder {
         // Add product rows (aggregated totals)
         foreach ( $product_totals as $product ) {
             $row = $shared;
-            $row[12] = $product['code'];   // M: Product Code
-            $row[13] = $product['desc'];   // N: Product Description
-            $row[14] = $product['qty'];    // O: Total Quantity
+            $row[12] = $product['code'];                          // M: Product Code
+            $row[13] = $this->sanitise_csv_cell( $product['desc'] ); // N: Product Description
+            $row[14] = $product['qty'];                           // O: Total Quantity
             $rows[] = $row;
         }
 
         // Add packaging material rows
         foreach ( $packaging_totals as $pkg ) {
             $row = $shared;
-            $row[12] = $pkg['code'];       // M: Packaging Code
-            $row[13] = $pkg['desc'];       // N: Packaging Description
-            $row[14] = $pkg['qty'];        // O: Total Quantity
+            $row[12] = $pkg['code'];                              // M: Packaging Code
+            $row[13] = $this->sanitise_csv_cell( $pkg['desc'] );    // N: Packaging Description
+            $row[14] = $pkg['qty'];                               // O: Total Quantity
             $rows[] = $row;
         }
 
@@ -177,6 +177,20 @@ class MME_Packing_List_Builder {
      * @param array $rows Array of row arrays
      * @return string CSV content
      */
+    /**
+     * Sanitise a cell value to prevent CSV injection (Excel formula injection).
+     *
+     * @param string $value The raw cell value
+     * @return string The sanitised cell value
+     */
+    private function sanitise_csv_cell( $value ) {
+        $value = (string) $value;
+        if ( $value !== '' && in_array( $value[0], [ '=', '+', '-', '@' ], true ) ) {
+            return "\t" . $value;
+        }
+        return $value;
+    }
+
     private function rows_to_csv( array $rows ) {
         $output = fopen( 'php://temp', 'r+' );
 

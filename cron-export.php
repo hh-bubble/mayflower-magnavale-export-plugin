@@ -65,8 +65,8 @@ ini_set( 'memory_limit', '256M' );
 $wp_load = dirname( __FILE__ ) . '/../../../../wp-load.php';
 
 if ( ! file_exists( $wp_load ) ) {
-    echo '[' . date( 'Y-m-d H:i:s' ) . '] FATAL: Cannot find wp-load.php at: ' . $wp_load . PHP_EOL;
-    echo 'If WordPress is installed in a non-standard location, update the path in this file.' . PHP_EOL;
+    echo '[' . date( 'Y-m-d H:i:s' ) . '] FATAL: WordPress loader not found. Check plugin installation path.' . PHP_EOL;
+    error_log( 'Mayflower Export cron: wp-load.php not found at expected relative location.' );
     flock( $lock_fp, LOCK_UN );
     fclose( $lock_fp );
     exit( 1 );
@@ -114,10 +114,12 @@ try {
         $exit_code = 1;
     }
 } catch ( \Exception $e ) {
-    echo '[' . date( 'Y-m-d H:i:s' ) . '] FATAL: Uncaught exception: ' . $e->getMessage() . PHP_EOL;
+    echo '[' . date( 'Y-m-d H:i:s' ) . '] FATAL: Export failed unexpectedly. Check PHP error log for details.' . PHP_EOL;
+    error_log( '[Mayflower Export] Uncaught exception in cron: ' . $e->getMessage() );
     $exit_code = 1;
 } catch ( \Error $e ) {
-    echo '[' . date( 'Y-m-d H:i:s' ) . '] FATAL: Uncaught error: ' . $e->getMessage() . PHP_EOL;
+    echo '[' . date( 'Y-m-d H:i:s' ) . '] FATAL: Export failed unexpectedly. Check PHP error log for details.' . PHP_EOL;
+    error_log( '[Mayflower Export] Uncaught error in cron: ' . $e->getMessage() );
     $exit_code = 1;
 }
 

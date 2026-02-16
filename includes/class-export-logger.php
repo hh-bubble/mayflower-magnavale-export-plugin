@@ -112,7 +112,7 @@ class MME_Export_Logger {
         $table_name = $wpdb->prefix . self::TABLE_NAME;
 
         return $wpdb->get_row(
-            "SELECT * FROM {$table_name} ORDER BY id DESC LIMIT 1"
+            $wpdb->prepare( "SELECT * FROM {$table_name} ORDER BY id DESC LIMIT %d", 1 )
         );
     }
 

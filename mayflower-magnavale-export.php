@@ -257,13 +257,26 @@ function mme_run_export() {
     $order_filename  = MME_ACCOUNT_REF . '_ORDERS_' . $timestamp . '.csv';
     $packing_filename = MME_ACCOUNT_REF . '_PACKING_' . $timestamp . '.csv';
 
-    $archive_dir     = MME_PLUGIN_DIR . 'archives/';
-    $order_filepath  = $archive_dir . $order_filename;
+    // Sanitise filenames — allow only alphanumeric, underscore, hyphen, dot, caret
+    $order_filename   = preg_replace( '/[^a-zA-Z0-9_.\-\^]/', '', $order_filename );
+    $packing_filename = preg_replace( '/[^a-zA-Z0-9_.\-\^]/', '', $packing_filename );
+
+    $archive_dir      = MME_PLUGIN_DIR . 'archives/';
+    $order_filepath   = $archive_dir . $order_filename;
     $packing_filepath = $archive_dir . $packing_filename;
 
-    // Write CSV content to local archive files
+    // Verify paths resolve inside the archives directory (prevent traversal)
+    $archive_real = realpath( $archive_dir );
+    if ( $archive_real === false || strpos( realpath( dirname( $order_filepath ) ), $archive_real ) !== 0 ) {
+        MME_Export_Logger::log( 'failed', 'Archive path validation failed. Export aborted.' );
+        return;
+    }
+
+    // Write CSV content to local archive files with restrictive permissions (PII data)
     file_put_contents( $order_filepath, $order_csv );
+    chmod( $order_filepath, 0600 );
     file_put_contents( $packing_filepath, $packing_csv );
+    chmod( $packing_filepath, 0600 );
 
     // -----------------------------------------------------------------------
     // STEP 7: Upload both files to SFTP
@@ -393,7 +406,8 @@ function mme_admin_assets( $hook ) {
     );
 
     wp_localize_script( 'mme-admin', 'mme_ajax', [
-        'url'   => admin_url( 'admin-ajax.php' ),
-        'nonce' => wp_create_nonce( 'mme_manual_export' ),
+        'url'          => admin_url( 'admin-ajax.php' ),
+        'export_nonce' => wp_create_nonce( 'mme_manual_export' ),
+        'sftp_nonce'   => wp_create_nonce( 'mme_test_sftp' ),
     ] );
 }

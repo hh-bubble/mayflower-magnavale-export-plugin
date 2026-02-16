@@ -90,9 +90,8 @@ class MME_CSV_Builder {
                     // TODO: Log warning — this order has a product with no SKU
                     $sku = 'MISSING_SKU_' . $item->get_product_id();
                     error_log( sprintf(
-                        '[Mayflower Export] WARNING: Order #%d has product "%s" (ID: %d) with no SKU.',
+                        '[Mayflower Export] WARNING: Order #%d has product with no SKU (product ID: %d).',
                         $order_id,
-                        $item->get_name(),
                         $item->get_product_id()
                     ) );
                 }
@@ -100,7 +99,7 @@ class MME_CSV_Builder {
                 // Build the product-specific columns and merge with shared columns
                 $row = $shared;
                 $row[12] = $sku;                    // M: Product Code
-                $row[13] = $item->get_name();       // N: Product Description
+                $row[13] = $this->sanitise_csv_cell( $item->get_name() ); // N: Product Description
                 $row[14] = $quantity;                // O: Quantity
 
                 $rows[] = $row;
@@ -173,6 +172,24 @@ class MME_CSV_Builder {
      * @param array $rows Array of row arrays
      * @return string CSV content
      */
+    /**
+     * Sanitise a cell value to prevent CSV injection (Excel formula injection).
+     *
+     * If a cell starts with =, +, -, or @, Excel/LibreOffice may interpret it
+     * as a formula. Prepending a tab character neutralises this without visually
+     * affecting the data in most spreadsheet applications.
+     *
+     * @param string $value The raw cell value
+     * @return string The sanitised cell value
+     */
+    private function sanitise_csv_cell( $value ) {
+        $value = (string) $value;
+        if ( $value !== '' && in_array( $value[0], [ '=', '+', '-', '@' ], true ) ) {
+            return "\t" . $value;
+        }
+        return $value;
+    }
+
     private function rows_to_csv( array $rows ) {
         $output = fopen( 'php://temp', 'r+' );
 

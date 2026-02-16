@@ -24,7 +24,7 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 action: 'mme_test_sftp',
-                nonce: mme_ajax.nonce
+                nonce: mme_ajax.sftp_nonce
             },
             success: function(response) {
                 if (response.success) {

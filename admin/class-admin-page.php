@@ -163,7 +163,7 @@ class MME_Admin_Page {
         if ( ! current_user_can( 'manage_woocommerce' ) ) {
             wp_send_json_error( 'Insufficient permissions.' );
         }
-        check_ajax_referer( 'mme_manual_export', 'nonce' );
+        check_ajax_referer( 'mme_test_sftp', 'nonce' );
 
         $uploader = new MME_SFTP_Uploader();
         $result   = $uploader->test_connection();

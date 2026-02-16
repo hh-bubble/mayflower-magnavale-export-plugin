@@ -91,7 +91,7 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 action: 'mme_manual_export',
-                nonce: mme_ajax.nonce
+                nonce: mme_ajax.export_nonce
             },
             success: function(response) {
                 var $notice = $('#mme-export-notice');

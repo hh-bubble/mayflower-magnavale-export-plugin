@@ -194,9 +194,16 @@ class MME_SFTP_Uploader {
 
         // Authenticate — SSH key or password
         if ( ! empty( $this->settings['key_path'] ) && file_exists( $this->settings['key_path'] ) ) {
+            // Validate key_path is within wp-content/ to prevent arbitrary file reads
+            $key_real    = realpath( $this->settings['key_path'] );
+            $allowed_dir = realpath( WP_CONTENT_DIR );
+            if ( $key_real === false || $allowed_dir === false || strpos( $key_real, $allowed_dir ) !== 0 ) {
+                throw new \Exception( 'SSH key path must be within wp-content/.' );
+            }
+
             // SSH key authentication
             $key = \phpseclib3\Crypt\PublicKeyLoader::load(
-                file_get_contents( $this->settings['key_path'] ),
+                file_get_contents( $key_real ),
                 $this->settings['password'] // passphrase for the key, if any
             );
 
@@ -261,17 +268,21 @@ class MME_SFTP_Uploader {
             return '';
         }
 
-        $key = defined( 'AUTH_KEY' ) ? AUTH_KEY : 'mayflower-fallback-key';
-
-        // Use OpenSSL if available, otherwise fall back to simple obfuscation
-        if ( function_exists( 'openssl_encrypt' ) ) {
-            $iv     = openssl_random_pseudo_bytes( 16 );
-            $cipher = openssl_encrypt( $value, 'AES-256-CBC', $key, 0, $iv );
-            return base64_encode( $iv . $cipher );
+        if ( ! function_exists( 'openssl_encrypt' ) ) {
+            error_log( '[Mayflower Export] FATAL: OpenSSL extension is required for credential encryption.' );
+            return '';
         }
 
-        // Fallback: base64 encode (not truly encrypted, but better than plain text)
-        return base64_encode( $value );
+        $key    = defined( 'AUTH_KEY' ) ? AUTH_KEY : wp_salt( 'auth' );
+        $iv     = random_bytes( 16 );
+        $cipher = openssl_encrypt( $value, 'AES-256-CBC', $key, 0, $iv );
+
+        if ( $cipher === false ) {
+            error_log( '[Mayflower Export] Encryption failed.' );
+            return '';
+        }
+
+        return base64_encode( $iv . $cipher );
     }
 
     /**
@@ -285,17 +296,23 @@ class MME_SFTP_Uploader {
             return '';
         }
 
-        $key = defined( 'AUTH_KEY' ) ? AUTH_KEY : 'mayflower-fallback-key';
-
-        if ( function_exists( 'openssl_decrypt' ) ) {
-            $data  = base64_decode( $encrypted_value );
-            $iv    = substr( $data, 0, 16 );
-            $cipher = substr( $data, 16 );
-            $decrypted = openssl_decrypt( $cipher, 'AES-256-CBC', $key, 0, $iv );
-            return $decrypted !== false ? $decrypted : '';
+        if ( ! function_exists( 'openssl_decrypt' ) ) {
+            error_log( '[Mayflower Export] FATAL: OpenSSL extension is required for credential decryption.' );
+            return '';
         }
 
-        // Fallback
-        return base64_decode( $encrypted_value );
+        $key  = defined( 'AUTH_KEY' ) ? AUTH_KEY : wp_salt( 'auth' );
+        $data = base64_decode( $encrypted_value, true );
+
+        // Validate: data must be at least 17 bytes (16-byte IV + 1 byte cipher minimum)
+        if ( $data === false || strlen( $data ) <= 16 ) {
+            return '';
+        }
+
+        $iv        = substr( $data, 0, 16 );
+        $cipher    = substr( $data, 16 );
+        $decrypted = openssl_decrypt( $cipher, 'AES-256-CBC', $key, 0, $iv );
+
+        return $decrypted !== false ? $decrypted : '';
     }
 }
