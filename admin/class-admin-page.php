@@ -85,15 +85,41 @@ class MME_Admin_Page {
 
         $this->add_text_field( 'mme_alert_email', 'Alert Email', get_option( 'admin_email' ), false, 'mme_alert_section' );
 
-        // Register all settings
-        $settings = [
-            'mme_sftp_host', 'mme_sftp_port', 'mme_sftp_username', 'mme_sftp_password',
-            'mme_sftp_remote_dir', 'mme_account_ref', 'mme_courier', 'mme_dpd_service',
+        // ---- Register all settings with appropriate sanitize callbacks ----
+
+        // Encrypted fields: host, username, password
+        // These use AES-256-CBC encryption via MME_SFTP_Uploader::encrypt().
+        // The form renders these fields blank for security, so if the submitted
+        // value is empty we preserve the existing encrypted value in the database.
+        $encrypted_fields = [ 'mme_sftp_host', 'mme_sftp_username', 'mme_sftp_password' ];
+
+        foreach ( $encrypted_fields as $field ) {
+            register_setting( 'mme_settings', $field, [
+                'sanitize_callback' => function( $new_value ) use ( $field ) {
+                    $new_value = is_string( $new_value ) ? trim( $new_value ) : '';
+
+                    // If blank, keep the existing encrypted value (don't overwrite with empty)
+                    if ( $new_value === '' ) {
+                        return get_option( $field, '' );
+                    }
+
+                    // Encrypt the new value before storing
+                    return MME_SFTP_Uploader::encrypt( $new_value );
+                },
+            ] );
+        }
+
+        // Plain-text fields with standard sanitization
+        $plain_fields = [
+            'mme_sftp_port', 'mme_sftp_remote_dir',
+            'mme_account_ref', 'mme_courier', 'mme_dpd_service',
             'mme_cutoff_time', 'mme_alert_email',
         ];
 
-        foreach ( $settings as $setting ) {
-            register_setting( 'mme_settings', $setting );
+        foreach ( $plain_fields as $field ) {
+            register_setting( 'mme_settings', $field, [
+                'sanitize_callback' => 'sanitize_text_field',
+            ] );
         }
     }
 
@@ -168,7 +194,11 @@ class MME_Admin_Page {
 
     private function add_password_field( $id, $label ) {
         add_settings_field( $id, $label, function() use ( $id ) {
+            $stored = get_option( $id, '' );
             echo '<input type="password" name="' . esc_attr( $id ) . '" class="regular-text" placeholder="••••••••" />';
+            if ( $stored ) {
+                echo ' <span class="dashicons dashicons-yes" style="color:green;"></span> Saved (encrypted)';
+            }
             echo '<p class="description">Leave blank to keep existing password.</p>';
         }, 'mayflower-magnavale', 'mme_sftp_section' );
     }

@@ -268,11 +268,21 @@ function mme_run_export() {
     // -----------------------------------------------------------------------
     // STEP 7: Upload both files to SFTP
     // -----------------------------------------------------------------------
-    $uploader = new MME_SFTP_Uploader();
-    $upload_result = $uploader->upload( [
-        $order_filename   => $order_filepath,
-        $packing_filename => $packing_filepath,
-    ] );
+    // TODO: TEMPORARY BYPASS — Re-enable SFTP upload once credentials are configured.
+    // Remove the $upload_result override below and uncomment the upload block.
+    //
+    // $uploader = new MME_SFTP_Uploader();
+    // $upload_result = $uploader->upload( [
+    //     $order_filename   => $order_filepath,
+    //     $packing_filename => $packing_filepath,
+    // ] );
+    //
+    // Simulate success so CSV generation and order marking still work during testing.
+    $upload_result = [
+        'success'  => true,
+        'error'    => '',
+        'uploaded' => [ $order_filename, $packing_filename ],
+    ];
 
     // -----------------------------------------------------------------------
     // STEP 8: Mark orders as exported (or failed) and log the result

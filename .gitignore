@@ -1,0 +1,19 @@
+# Composer dependencies (install via: composer install --no-dev)
+/vendor/
+
+# CSV archives contain customer PII — never commit these
+/archives/*.csv
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Claude Code local config
+.claude/
