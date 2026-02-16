@@ -60,9 +60,10 @@ ini_set( 'memory_limit', '256M' );
 // BOOTSTRAP WORDPRESS
 // ============================================================================
 // Standard plugin location: wp-content/plugins/mayflower-magnavale-export/
-// wp-load.php is 4 levels up: ../../../../wp-load.php
+// wp-load.php is 3 levels up: ../../../wp-load.php
+// (plugin dir → plugins → wp-content → WordPress root)
 
-$wp_load = dirname( __FILE__ ) . '/../../../../wp-load.php';
+$wp_load = dirname( __FILE__ ) . '/../../../wp-load.php';
 
 if ( ! file_exists( $wp_load ) ) {
     echo '[' . date( 'Y-m-d H:i:s' ) . '] FATAL: WordPress loader not found. Check plugin installation path.' . PHP_EOL;

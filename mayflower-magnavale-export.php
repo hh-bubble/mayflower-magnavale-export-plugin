@@ -163,6 +163,10 @@ function mme_flag_order_for_export( $order_id, $old_status, $new_status, $order 
  */
 register_activation_hook( __FILE__, 'mme_activate' );
 function mme_activate() {
+    // Load classes manually — activation hook fires BEFORE plugins_loaded,
+    // so mme_load_classes() hasn't run yet at this point.
+    require_once MME_PLUGIN_DIR . 'includes/class-export-logger.php';
+
     // Clean up any leftover WP-Cron events from previous versions
     wp_clear_scheduled_hook( 'mme_daily_export_cron' );
 
