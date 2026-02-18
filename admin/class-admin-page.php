@@ -50,16 +50,16 @@ class MME_Admin_Page {
      */
     public function register_settings() {
 
-        // ---- SFTP Section ----
-        add_settings_section( 'mme_sftp_section', 'SFTP Configuration', function() {
-            echo '<p>Configure the SFTP server connection. Credentials are stored encrypted in the database.</p>';
+        // ---- FTPS Section ----
+        add_settings_section( 'mme_sftp_section', 'FTPS Configuration', function() {
+            echo '<p>Configure the FTPS (FTP over TLS) server connection. Credentials are stored encrypted in the database.</p>';
         }, 'mayflower-magnavale' );
 
-        $this->add_text_field( 'mme_sftp_host', 'SFTP Host', 'sftp.example.com', true );
-        $this->add_number_field( 'mme_sftp_port', 'SFTP Port', 22 );
-        $this->add_text_field( 'mme_sftp_username', 'Username', 'username', true );
+        $this->add_text_field( 'mme_sftp_host', 'FTPS Host', 's460.sureserver.com', true );
+        $this->add_number_field( 'mme_sftp_port', 'FTPS Port', 21 );
+        $this->add_text_field( 'mme_sftp_username', 'Username', 'magnavale', true );
         $this->add_password_field( 'mme_sftp_password', 'Password' );
-        $this->add_text_field( 'mme_sftp_remote_dir', 'Remote Directory', '/uploads/' );
+        $this->add_text_field( 'mme_sftp_remote_dir', 'Remote Directory', '/' );
 
         // ---- Account Section ----
         add_settings_section( 'mme_account_section', 'Account Settings', function() {

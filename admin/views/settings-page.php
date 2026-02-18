@@ -30,11 +30,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
     <hr>
 
-    <!-- SFTP Connection Test Button -->
+    <!-- FTPS Connection Test Button -->
     <h2>Connection Test</h2>
-    <p>Test the SFTP connection with the saved credentials.</p>
+    <p>Test the FTPS connection with the saved credentials.</p>
     <button type="button" id="mme-test-sftp" class="button button-secondary">
-        Test SFTP Connection
+        Test FTPS Connection
     </button>
     <span id="mme-test-result" style="margin-left: 10px;"></span>
 

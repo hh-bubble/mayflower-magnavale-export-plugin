@@ -3,7 +3,7 @@
  * Plugin Name:       Mayflower Magnavale Export
  * Plugin URI:        https://bubbledesign.co.uk
  * Description:       Exports WooCommerce orders as CSV files in Magnavale's required format
- *                    and uploads them via SFTP for fulfillment by Magnavale/DPD.
+ *                    and uploads them via FTPS for fulfillment by Magnavale/DPD.
  * Version:           1.0.0
  * Author:            Bubble Design & Marketing Ltd
  * Author URI:        https://bubbledesign.co.uk
@@ -27,7 +27,7 @@
  * 5. Builds two CSV files:
  *    - Order CSV:   One row per line item per order (19 columns, no header)
  *    - Packing CSV:  Aggregated product totals + packaging materials (15 columns, no header)
- * 6. Uploads both CSVs to SFTP server via phpseclib
+ * 6. Uploads both CSVs to FTPS server via PHP's native FTP extension
  * 7. Marks orders as exported, logs everything, archives files locally
  *
  * Account: KING01 | Courier: DPD | Service: 1^12 (DPD 12:00)
@@ -283,23 +283,13 @@ function mme_run_export() {
     chmod( $packing_filepath, 0600 );
 
     // -----------------------------------------------------------------------
-    // STEP 7: Upload both files to SFTP
+    // STEP 7: Upload both files to FTPS
     // -----------------------------------------------------------------------
-    // TODO: TEMPORARY BYPASS — Re-enable SFTP upload once credentials are configured.
-    // Remove the $upload_result override below and uncomment the upload block.
-    //
-    // $uploader = new MME_SFTP_Uploader();
-    // $upload_result = $uploader->upload( [
-    //     $order_filename   => $order_filepath,
-    //     $packing_filename => $packing_filepath,
-    // ] );
-    //
-    // Simulate success so CSV generation and order marking still work during testing.
-    $upload_result = [
-        'success'  => true,
-        'error'    => '',
-        'uploaded' => [ $order_filename, $packing_filename ],
-    ];
+    $uploader = new MME_SFTP_Uploader();
+    $upload_result = $uploader->upload( [
+        $order_filename   => $order_filepath,
+        $packing_filename => $packing_filepath,
+    ] );
 
     // -----------------------------------------------------------------------
     // STEP 8: Mark orders as exported (or failed) and log the result
