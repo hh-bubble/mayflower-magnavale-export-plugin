@@ -7,7 +7,7 @@
  *
  * SETTINGS SECTIONS:
  * ==================
- * 1. SFTP Configuration  — server, port, username, password/key (encrypted)
+ * 1. FTPS Configuration  — server, port, username, password (encrypted)
  * 2. Account Settings    — Magnavale account ref, courier, DPD service code
  * 3. Schedule Settings   — order cut-off time (export time is managed by server cron)
  * 4. Manual Export        — "Export Now" button + pending order count
@@ -88,7 +88,7 @@ class MME_Admin_Page {
         // ---- Register all settings with appropriate sanitize callbacks ----
 
         // Encrypted fields: host, username, password
-        // These use AES-256-CBC encryption via MME_SFTP_Uploader::encrypt().
+        // These use AES-256-CBC encryption via MME_SFTP_Uploader::encrypt() (class name kept for DB compatibility).
         // The form renders these fields blank for security, so if the submitted
         // value is empty we preserve the existing encrypted value in the database.
         $encrypted_fields = [ 'mme_sftp_host', 'mme_sftp_username', 'mme_sftp_password' ];
@@ -157,7 +157,7 @@ class MME_Admin_Page {
     }
 
     /**
-     * AJAX handler: test SFTP connection from settings page.
+     * AJAX handler: test FTPS connection from settings page.
      */
     public function ajax_test_sftp() {
         if ( ! current_user_can( 'manage_woocommerce' ) ) {

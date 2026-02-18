@@ -202,7 +202,7 @@ function mme_deactivate() {
  * 3. BoxCalculator    → Calculate boxes, labels, ice packs per order
  * 4. CsvBuilder       → Build the order CSV (one row per line item)
  * 5. PackingListBuilder → Build the packing list CSV (aggregated totals + packaging)
- * 6. SftpUploader     → Upload both files to SFTP
+ * 6. SftpUploader     → Upload both files to FTPS
  * 7. ExportLogger     → Log everything, archive files, mark orders as exported
  */
 function mme_run_export() {
@@ -319,7 +319,7 @@ function mme_run_export() {
     } else {
         // Log the failure — don't mark orders as exported so they get retried
         MME_Export_Logger::log( 'failed', sprintf(
-            'SFTP upload failed: %s',
+            'FTPS upload failed: %s',
             $upload_result['error']
         ), [
             'order_count' => count( $orders ),
@@ -330,7 +330,7 @@ function mme_run_export() {
         $admin_email = get_option( 'mme_alert_email', 'holly@bubbledesign.co.uk' );
         wp_mail(
             $admin_email,
-            '[Mayflower Export] SFTP Upload Failed',
+            '[Mayflower Export] FTPS Upload Failed',
             sprintf(
                 "The Magnavale export failed at %s.\n\nError: %s\n\n%d orders are still pending and will be retried on the next run.",
                 current_time( 'mysql' ),

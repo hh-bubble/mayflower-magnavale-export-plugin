@@ -2,7 +2,7 @@
 /**
  * Settings Page View
  *
- * Renders the main settings form with SFTP, account, and schedule configuration.
+ * Renders the main settings form with FTPS, account, and schedule configuration.
  * Uses WordPress Settings API — fields are registered in class-admin-page.php.
  *
  * @package MayflowerMagnavaleExport

@@ -1,7 +1,7 @@
 /**
  * Mayflower Magnavale Export — Admin JavaScript
  *
- * Handles the SFTP connection test button on the settings page.
+ * Handles the FTPS connection test button on the settings page.
  * The manual export button has its own inline JS in the view template.
  *
  * @package MayflowerMagnavaleExport
@@ -10,7 +10,7 @@
 jQuery(document).ready(function($) {
 
     /**
-     * Test SFTP Connection button
+     * Test FTPS Connection button
      */
     $('#mme-test-sftp').on('click', function() {
         var $btn    = $(this);
@@ -32,11 +32,11 @@ jQuery(document).ready(function($) {
                 } else {
                     $result.text('✗ ' + response.message).css('color', 'red');
                 }
-                $btn.prop('disabled', false).text('Test SFTP Connection');
+                $btn.prop('disabled', false).text('Test FTPS Connection');
             },
             error: function() {
                 $result.text('✗ Request failed — check server logs.').css('color', 'red');
-                $btn.prop('disabled', false).text('Test SFTP Connection');
+                $btn.prop('disabled', false).text('Test FTPS Connection');
             }
         });
     });
