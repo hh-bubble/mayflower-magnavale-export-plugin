@@ -176,11 +176,16 @@ class MME_Admin_Page {
 
     private function add_text_field( $id, $label, $default = '', $encrypted = false, $section = 'mme_sftp_section' ) {
         add_settings_field( $id, $label, function() use ( $id, $default, $encrypted ) {
-            $value = $encrypted ? '' : get_option( $id, $default );
-            echo '<input type="text" name="' . esc_attr( $id ) . '" value="' . esc_attr( $value ) . '" class="regular-text" />';
             if ( $encrypted ) {
+                // Render blank with autocomplete off to prevent browser autofill.
+                // Show a placeholder hint if a value is already saved.
                 $stored = get_option( $id, '' );
-                echo $stored ? '<span class="dashicons dashicons-yes" style="color:green;"></span> Saved (encrypted)' : '';
+                echo '<input type="text" name="' . esc_attr( $id ) . '" value="" class="regular-text" autocomplete="off" placeholder="' . ( $stored ? 'Leave blank to keep existing' : '' ) . '" />';
+                echo $stored ? ' <span class="dashicons dashicons-yes" style="color:green;"></span> Saved (encrypted)' : '';
+                echo '<p class="description">Leave blank to keep existing value.</p>';
+            } else {
+                $value = get_option( $id, $default );
+                echo '<input type="text" name="' . esc_attr( $id ) . '" value="' . esc_attr( $value ) . '" class="regular-text" />';
             }
         }, 'mayflower-magnavale', $section );
     }
@@ -195,7 +200,7 @@ class MME_Admin_Page {
     private function add_password_field( $id, $label ) {
         add_settings_field( $id, $label, function() use ( $id ) {
             $stored = get_option( $id, '' );
-            echo '<input type="password" name="' . esc_attr( $id ) . '" class="regular-text" placeholder="••••••••" />';
+            echo '<input type="password" name="' . esc_attr( $id ) . '" class="regular-text" autocomplete="new-password" placeholder="' . ( $stored ? 'Leave blank to keep existing' : '' ) . '" />';
             if ( $stored ) {
                 echo ' <span class="dashicons dashicons-yes" style="color:green;"></span> Saved (encrypted)';
             }
