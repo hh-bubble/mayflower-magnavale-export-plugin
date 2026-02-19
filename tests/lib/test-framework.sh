@@ -20,8 +20,9 @@ TESTS_SKIPPED=0
 CURRENT_SUITE=""
 
 # ── Directories ────────────────────────────────────────────────────────────
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SUITE_DIR="$(dirname "$SCRIPT_DIR")"
+# Use _FW_DIR internally to avoid clobbering the caller's SCRIPT_DIR
+_FW_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SUITE_DIR="$(dirname "$_FW_DIR")"
 LOG_DIR="${SUITE_DIR}/logs"
 RESULTS_DIR="${SUITE_DIR}/results"
 mkdir -p "$LOG_DIR" "$RESULTS_DIR"

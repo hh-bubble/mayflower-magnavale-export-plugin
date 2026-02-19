@@ -4,9 +4,10 @@
 # ===========================================================================
 
 # Source framework if not already loaded
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Use _WPH_DIR internally to avoid clobbering the caller's SCRIPT_DIR
+_WPH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -z "${TESTS_RUN:-}" ]]; then
-    source "${SCRIPT_DIR}/test-framework.sh"
+    source "${_WPH_DIR}/test-framework.sh"
 fi
 
 # ── All Magnavale product SKUs ─────────────────────────────────────────────
