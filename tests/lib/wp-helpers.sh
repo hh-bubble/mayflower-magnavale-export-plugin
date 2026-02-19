@@ -88,7 +88,7 @@ get_any_product_id_by_sku() {
 # ── Order creation ─────────────────────────────────────────────────────────
 # Create a WooCommerce order with given line items
 # Usage: create_test_order "sku1:qty1" "sku2:qty2" ...
-# Returns: order ID
+# Returns: order ID (numeric) on stdout
 create_test_order() {
     local items=("$@")
     local customer_first="${TEST_FIRST_NAME:-Test}"
@@ -99,50 +99,81 @@ create_test_order() {
     local postcode="${TEST_POSTCODE:-M1 1AA}"
     local phone="${TEST_PHONE:-07700900000}"
 
-    # Create the order
-    local order_id
-    order_id=$(wp_cmd wc shop_order create \
-        --status=processing \
-        --billing='{"first_name":"'"$customer_first"'","last_name":"'"$customer_last"'","email":"'"$customer_email"'","phone":"'"$phone"'","address_1":"'"$address_1"'","city":"'"$city"'","postcode":"'"$postcode"'","country":"GB"}' \
-        --shipping='{"first_name":"'"$customer_first"'","last_name":"'"$customer_last"'","address_1":"'"$address_1"'","city":"'"$city"'","postcode":"'"$postcode"'","country":"GB"}' \
-        --user=1 \
-        --porcelain 2>/dev/null)
+    # Base64-encode customer fields to safely pass special chars into PHP
+    local b64_first b64_last b64_email b64_addr b64_city b64_post b64_phone
+    b64_first=$(printf '%s' "$customer_first" | base64)
+    b64_last=$(printf '%s' "$customer_last" | base64)
+    b64_email=$(printf '%s' "$customer_email" | base64)
+    b64_addr=$(printf '%s' "$address_1" | base64)
+    b64_city=$(printf '%s' "$city" | base64)
+    b64_post=$(printf '%s' "$postcode" | base64)
+    b64_phone=$(printf '%s' "$phone" | base64)
 
-    if [[ -z "$order_id" ]]; then
-        log_fail "Failed to create order" >&2
-        return 1
-    fi
-
-    # Tag as test order
-    wp_cmd post meta update "$order_id" "_mvtest_order" "1" > /dev/null
-
-    # Add line items via PHP for reliability
+    # Build the SKU:qty PHP array literal
+    local php_items="["
+    local first_item=1
     for item in "${items[@]}"; do
         local sku="${item%%:*}"
         local qty="${item##*:}"
-        
-        wp_cmd eval "
-            \$order = wc_get_order($order_id);
-            if (!\$order) { echo 'ORDER_NOT_FOUND'; exit; }
-
-            // Find product by SKU
-            \$product_id = wc_get_product_id_by_sku('$sku');
-            if (!\$product_id) { echo 'SKU_NOT_FOUND:$sku'; exit; }
-
-            \$product = wc_get_product(\$product_id);
-            if (!\$product) { echo 'PRODUCT_NOT_FOUND:$sku'; exit; }
-
-            \$item = new WC_Order_Item_Product();
-            \$item->set_product(\$product);
-            \$item->set_quantity($qty);
-            \$item->set_subtotal(\$product->get_price() * $qty);
-            \$item->set_total(\$product->get_price() * $qty);
-            \$order->add_item(\$item);
-            \$order->calculate_totals();
-            \$order->save();
-            echo 'OK';
-        " > /dev/null 2>&1
+        [[ $first_item -eq 1 ]] && first_item=0 || php_items+=","
+        php_items+="['sku'=>'${sku}','qty'=>${qty:-0}]"
     done
+    php_items+="]"
+
+    # Create order + add line items in a single wp eval call
+    local order_id
+    order_id=$(wp_cmd eval "
+        \$order = wc_create_order(['status' => 'processing']);
+        if (is_wp_error(\$order)) { fwrite(STDERR, 'wc_create_order failed'); exit(1); }
+
+        \$first = base64_decode('${b64_first}');
+        \$last  = base64_decode('${b64_last}');
+        \$email = base64_decode('${b64_email}');
+        \$addr  = base64_decode('${b64_addr}');
+        \$city  = base64_decode('${b64_city}');
+        \$post  = base64_decode('${b64_post}');
+        \$phone = base64_decode('${b64_phone}');
+
+        \$order->set_billing_first_name(\$first);
+        \$order->set_billing_last_name(\$last);
+        \$order->set_billing_email(\$email);
+        \$order->set_billing_phone(\$phone);
+        \$order->set_billing_address_1(\$addr);
+        \$order->set_billing_city(\$city);
+        \$order->set_billing_postcode(\$post);
+        \$order->set_billing_country('GB');
+
+        \$order->set_shipping_first_name(\$first);
+        \$order->set_shipping_last_name(\$last);
+        \$order->set_shipping_address_1(\$addr);
+        \$order->set_shipping_city(\$city);
+        \$order->set_shipping_postcode(\$post);
+        \$order->set_shipping_country('GB');
+
+        // Add line items
+        foreach (${php_items} as \$li) {
+            \$pid = wc_get_product_id_by_sku(\$li['sku']);
+            if (!\$pid) continue;
+            \$product = wc_get_product(\$pid);
+            if (!\$product) continue;
+            \$line = new WC_Order_Item_Product();
+            \$line->set_product(\$product);
+            \$line->set_quantity(\$li['qty']);
+            \$line->set_subtotal(\$product->get_price() * \$li['qty']);
+            \$line->set_total(\$product->get_price() * \$li['qty']);
+            \$order->add_item(\$line);
+        }
+
+        \$order->calculate_totals();
+        \$order->update_meta_data('_mvtest_order', '1');
+        \$order->save();
+        echo \$order->get_id();
+    " 2>/dev/null)
+
+    if [[ -z "$order_id" || ! "$order_id" =~ ^[0-9]+$ ]]; then
+        log_fail "Failed to create order" >&2
+        return 1
+    fi
 
     echo "$order_id"
 }
@@ -155,8 +186,14 @@ create_tagged_test_order() {
     order_id=$(create_test_order "$@")
 
     if [[ -n "$order_id" ]]; then
-        wp_cmd post meta update "$order_id" "_mvtest_scenario" "$scenario_name" > /dev/null
-        wp_cmd post meta update "$order_id" "_magnavale_export_status" "pending" > /dev/null
+        wp_cmd eval "
+            \$order = wc_get_order(${order_id});
+            if (\$order) {
+                \$order->update_meta_data('_mvtest_scenario', '${scenario_name}');
+                \$order->update_meta_data('_magnavale_export_status', 'pending');
+                \$order->save();
+            }
+        " > /dev/null 2>&1
         log_info "Created order #${order_id} for scenario: ${scenario_name}" >&2
     fi
 
@@ -219,19 +256,25 @@ get_box_data() {
 # ── Cleanup ────────────────────────────────────────────────────────────────
 cleanup_test_orders() {
     log_info "Cleaning up test orders..."
-    local test_orders
-    test_orders=$(wp_cmd post list --post_type=shop_order --meta_key=_mvtest_order --meta_value=1 --field=ID 2>/dev/null)
-    
-    local count=0
-    for order_id in $test_orders; do
-        wp_cmd post delete "$order_id" --force > /dev/null 2>&1
-        count=$((count + 1))
-    done
-    
+    local count
+    count=$(wp_cmd eval "
+        \$orders = wc_get_orders([
+            'meta_key'   => '_mvtest_order',
+            'meta_value' => '1',
+            'limit'      => -1,
+            'return'     => 'ids',
+        ]);
+        foreach (\$orders as \$id) {
+            \$o = wc_get_order(\$id);
+            if (\$o) \$o->delete(true);
+        }
+        echo count(\$orders);
+    " 2>/dev/null)
+
     # Also clean up any test CSV files
     find /tmp -name "TEST_*.csv" -mmin +5 -delete 2>/dev/null || true
-    
-    log_info "Cleaned up $count test orders"
+
+    log_info "Cleaned up ${count:-0} test orders"
 }
 
 # ── Address Generators (for varied test data) ──────────────────────────────

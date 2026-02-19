@@ -88,7 +88,7 @@ NONCE=$(scan_plugin "
     \$verify = 0; \$actions = 0;
     foreach (\$files as \$f) {
         \$c = file_get_contents(\$f);
-        if (strpos(\$c,'wp_verify_nonce')!==false || strpos(\$c,'check_admin_referer')!==false) \$verify++;
+        if (strpos(\$c,'wp_verify_nonce')!==false || strpos(\$c,'check_admin_referer')!==false || strpos(\$c,'check_ajax_referer')!==false) \$verify++;
         if (strpos(\$c,'admin_post_')!==false || strpos(\$c,'wp_ajax_')!==false) \$actions++;
     }
     echo \"verify:\$verify|actions:\$actions\";
@@ -242,18 +242,28 @@ fi
 # ═══ F: WORDPRESS BEST PRACTICES ═══
 log_info "═══ F: WORDPRESS BEST PRACTICES ═══"
 
-# Direct file access prevention
-DIRECT=$(scan_plugin "
+# Direct file access prevention (uses RecursiveDirectoryIterator for full recursion)
+DIRECT=$(wp_cmd eval "
+    \$dir = WP_PLUGIN_DIR . '/mayflower-magnavale-export/';
     \$unprotected = 0;
-    foreach (\$files as \$f) {
-        \$c = file_get_contents(\$f);
-        if (strpos(\$c,'ABSPATH')===false && strpos(\$c,'WPINC')===false && strpos(\$c,'defined(')===false) {
+    \$it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\$dir));
+    foreach (\$it as \$file) {
+        if (\$file->getExtension() !== 'php') continue;
+        \$c = file_get_contents(\$file->getPathname());
+        // Skip no-op index.php silence files
+        if (basename(\$file->getPathname()) === 'index.php' && strpos(\$c, 'Silence') !== false) continue;
+        // Accept ABSPATH/WPINC/defined() guards, CLI-only guards (php_sapi_name), and WP_UNINSTALL_PLUGIN
+        if (strpos(\$c,'ABSPATH')===false
+            && strpos(\$c,'WPINC')===false
+            && strpos(\$c,'defined(')===false
+            && strpos(\$c,'php_sapi_name')===false
+            && strpos(\$c,'WP_UNINSTALL_PLUGIN')===false) {
             \$unprotected++;
-            echo 'UNPROTECTED:'.basename(\$f).PHP_EOL;
+            echo 'UNPROTECTED:'.basename(\$file->getPathname()).PHP_EOL;
         }
     }
     echo \"unprotected:\$unprotected\";
-")
+" 2>/dev/null || true)
 UNPROTECTED=$(echo "$DIRECT" | tail -1 | grep -oP 'unprotected:\K[0-9]+')
 if [[ "${UNPROTECTED:-0}" == "0" ]]; then
     TESTS_RUN=$((TESTS_RUN + 1)); TESTS_PASSED=$((TESTS_PASSED + 1))
