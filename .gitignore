@@ -15,5 +15,9 @@ Thumbs.db
 *.swo
 *~
 
+# Test output (generated at runtime on the server)
+/tests/logs/
+/tests/results/
+
 # Claude Code local config
 .claude/
