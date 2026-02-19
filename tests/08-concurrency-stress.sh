@@ -41,16 +41,13 @@ mkdir -p "$PARALLEL_DIR"
 PIDS=()
 for oid in "${RAPID_IDS[@]}"; do
     (
-        wp_cmd eval "
-            if (class_exists('Mayflower_Magnavale_CSV_Exporter')) {
-                \$e = new Mayflower_Magnavale_CSV_Exporter();
-                \$csv = \$e->generate_csv($oid);
-                file_put_contents('${PARALLEL_DIR}/order_${oid}.csv', \$csv);
-                echo 'OK';
-            } else {
-                echo 'SKIP';
-            }
-        " > "${PARALLEL_DIR}/result_${oid}.txt" 2>/dev/null
+        csv_out=$(generate_test_csv "$oid")
+        if [[ -n "$csv_out" && "$csv_out" != "NO_ORDERS" ]]; then
+            echo "$csv_out" > "${PARALLEL_DIR}/order_${oid}.csv"
+            echo 'OK' > "${PARALLEL_DIR}/result_${oid}.txt"
+        else
+            echo 'SKIP' > "${PARALLEL_DIR}/result_${oid}.txt"
+        fi
     ) &
     PIDS+=($!)
 done
@@ -104,16 +101,11 @@ assert_true "Large order created within 60s" "[[ $ELAPSED -lt 60 ]]"
 # CSV generation timing
 if [[ -n "$large_order" ]]; then
     START_TIME=$(date +%s)
-    wp_cmd eval "
-        if (class_exists('Mayflower_Magnavale_CSV_Exporter')) {
-            \$e = new Mayflower_Magnavale_CSV_Exporter();
-            \$csv = \$e->generate_csv($large_order);
-            echo strlen(\$csv);
-        } else { echo 'SKIP'; }
-    " 2>/dev/null
+    csv_out=$(generate_test_csv "$large_order")
     END_TIME=$(date +%s)
     CSV_ELAPSED=$((END_TIME - START_TIME))
-    log_info "  CSV generation for large order took ${CSV_ELAPSED}s"
+    CSV_LEN=${#csv_out}
+    log_info "  CSV generation for large order took ${CSV_ELAPSED}s (${CSV_LEN} bytes)"
     assert_true "CSV generation under 30s" "[[ $CSV_ELAPSED -lt 30 ]]"
 fi
 
@@ -124,16 +116,19 @@ log_info "Testing memory usage during export..."
 if [[ -n "$large_order" ]]; then
     MEM_RESULT=$(wp_cmd eval "
         \$before = memory_get_usage(true);
-        if (class_exists('Mayflower_Magnavale_CSV_Exporter')) {
-            \$e = new Mayflower_Magnavale_CSV_Exporter();
-            \$csv = \$e->generate_csv($large_order);
-        }
+        \$order = wc_get_order($large_order);
+        \$date_calc = new MME_Delivery_Date_Calculator();
+        \$box_calc  = new MME_Box_Calculator();
+        \$dd = \$date_calc->calculate(\$order);
+        \$bd = \$box_calc->calculate(\$order);
+        \$csv_builder = new MME_CSV_Builder();
+        \$csv_builder->build([\$order], [\$order->get_id() => \$dd], [\$order->get_id() => \$bd]);
         \$after = memory_get_usage(true);
         \$used_mb = round((\$after - \$before) / 1024 / 1024, 2);
         \$peak_mb = round(memory_get_peak_usage(true) / 1024 / 1024, 2);
         echo \"used:\$used_mb|peak:\$peak_mb\";
     " 2>/dev/null)
-    
+
     log_info "  Memory: $MEM_RESULT"
     PEAK=$(echo "$MEM_RESULT" | grep -oP 'peak:\K[0-9.]+')
     if [[ -n "$PEAK" ]]; then

@@ -18,27 +18,13 @@ for sku in "${FOOD_SKUS[@]}"; do
     assert_not_empty "SKU exists in WooCommerce: $sku" "$product_id"
 done
 
-# ── Test: All packaging SKUs exist ─────────────────────────────────────────
-log_info "Checking all ${#PACKAGING_SKUS[@]} packaging SKUs..."
-for sku in "${PACKAGING_SKUS[@]}"; do
-    product_id=$(get_any_product_id_by_sku "$sku")
-    assert_not_empty "Packaging SKU exists: $sku" "$product_id"
-done
-
-# ── Test: Ice pack SKUs exist ──────────────────────────────────────────────
-log_info "Checking ice pack SKUs..."
-for sku in "${ICE_PACK_SKUS[@]}"; do
-    product_id=$(get_any_product_id_by_sku "$sku")
-    if [[ -z "$product_id" ]]; then
-        skip_test "Ice pack SKU exists: $sku" "Not yet confirmed with Magnavale"
-    else
-        assert_not_empty "Ice pack SKU exists: $sku" "$product_id"
-    fi
-done
+# ── Note: Packaging SKUs (5OSL, 5OSS, etc.) and ice-pack SKUs (DRYICE1KG,
+#    ICEPACK) are NOT WooCommerce products.  They are injected by
+#    MME_Box_Calculator at export time, so we don't look them up here.
 
 # ── Test: No duplicate SKUs ────────────────────────────────────────────────
 log_info "Checking for duplicate SKUs..."
-ALL_SKUS=("${FOOD_SKUS[@]}" "${PACKAGING_SKUS[@]}")
+ALL_SKUS=("${FOOD_SKUS[@]}")
 for sku in "${ALL_SKUS[@]}"; do
     count=$(wp_cmd eval "
         global \$wpdb;

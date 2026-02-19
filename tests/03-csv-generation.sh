@@ -24,30 +24,18 @@ fi
 CSV_OUTPUT_DIR="/tmp/mvtest_csv_${TIMESTAMP}"
 mkdir -p "$CSV_OUTPUT_DIR"
 
-# ── Helper: generate CSV for an order ──────────────────────────────────────
+# ── Helper: generate CSV for an order (uses plugin pipeline) ──────────────
 generate_csv_for_order() {
     local order_id="$1"
     local csv_file="${CSV_OUTPUT_DIR}/TEST_order_${order_id}.csv"
-    
-    wp_cmd eval "
-        // Attempt to call the plugin's CSV generation
-        if (class_exists('Mayflower_Magnavale_CSV_Exporter')) {
-            \$exporter = new Mayflower_Magnavale_CSV_Exporter();
-            \$csv = \$exporter->generate_csv($order_id);
-            file_put_contents('$csv_file', \$csv);
-            echo 'OK';
-        } else {
-            // Try alternative class/function names
-            if (function_exists('mayflower_generate_csv')) {
-                \$csv = mayflower_generate_csv($order_id);
-                file_put_contents('$csv_file', \$csv);
-                echo 'OK';
-            } else {
-                echo 'CLASS_NOT_FOUND';
-            }
-        }
-    " 2>/dev/null
-    
+
+    local csv_content
+    csv_content=$(generate_test_csv "$order_id")
+
+    if [[ -n "$csv_content" && "$csv_content" != "NO_ORDERS" ]]; then
+        echo "$csv_content" > "$csv_file"
+    fi
+
     echo "$csv_file"
 }
 
@@ -97,17 +85,7 @@ if [[ -f "$CSV_FILE" && -s "$CSV_FILE" ]]; then
     assert_equals "CSV has no null bytes" "0" "$NULL_COUNT"
 
 else
-    skip_test "CSV format validation" "Could not generate CSV — check plugin class name"
-    log_warn "Attempting to find plugin export class..."
-    wp_cmd eval "
-        // Search for export-related classes
-        \$classes = get_declared_classes();
-        foreach (\$classes as \$class) {
-            if (stripos(\$class, 'mayflower') !== false || stripos(\$class, 'magnavale') !== false) {
-                echo \$class . PHP_EOL;
-            }
-        }
-    " 2>/dev/null || true
+    skip_test "CSV format validation" "Could not generate CSV — check plugin classes"
 fi
 
 # ══════════════════════════════════════════════════════════════════════════

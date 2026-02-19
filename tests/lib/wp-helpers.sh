@@ -153,37 +153,66 @@ create_tagged_test_order() {
     shift
     local order_id
     order_id=$(create_test_order "$@")
-    
+
     if [[ -n "$order_id" ]]; then
         wp_cmd post meta update "$order_id" "_mvtest_scenario" "$scenario_name" > /dev/null
-        log_info "Created order #${order_id} for scenario: ${scenario_name}"
+        wp_cmd post meta update "$order_id" "_magnavale_export_status" "pending" > /dev/null
+        log_info "Created order #${order_id} for scenario: ${scenario_name}" >&2
     fi
-    
+
     echo "$order_id"
 }
 
-# ── CSV Export Trigger ─────────────────────────────────────────────────────
-trigger_export() {
-    local order_id="$1"
-    local output_dir="${2:-/tmp/mvtest_csv}"
-    mkdir -p "$output_dir"
-
+# ── CSV Generation (uses real plugin pipeline) ────────────────────────────
+# Generate the Magnavale order CSV for one or more orders.
+# Usage: generate_test_csv "id1,id2,..."   — returns CSV text on stdout
+generate_test_csv() {
+    local order_ids="$1"  # Comma-separated
     wp_cmd eval "
-        // Trigger the plugin's export for a specific order
-        do_action('mayflower_magnavale_export_order', $order_id);
-        echo 'EXPORT_TRIGGERED';
+        \$ids = array_map('intval', explode(',', '${order_ids}'));
+        \$orders = [];
+        foreach (\$ids as \$id) { \$o = wc_get_order(\$id); if (\$o) \$orders[] = \$o; }
+        if (empty(\$orders)) { echo 'NO_ORDERS'; exit; }
+        \$date_calc = new MME_Delivery_Date_Calculator();
+        \$box_calc  = new MME_Box_Calculator();
+        \$delivery_dates = []; \$box_data = [];
+        foreach (\$orders as \$order) {
+            \$delivery_dates[\$order->get_id()] = \$date_calc->calculate(\$order);
+            \$box_data[\$order->get_id()]       = \$box_calc->calculate(\$order);
+        }
+        \$csv_builder = new MME_CSV_Builder();
+        echo \$csv_builder->build(\$orders, \$delivery_dates, \$box_data);
     " 2>/dev/null
 }
 
-# Trigger export and capture the CSV file path
-export_order_to_csv() {
-    local order_id="$1"
-    
+# Generate the packing-list CSV for one or more orders.
+generate_test_packing_csv() {
+    local order_ids="$1"
     wp_cmd eval "
-        // Get the CSV content for an order
-        \$exporter = new Mayflower_Magnavale_CSV_Exporter();
-        \$csv = \$exporter->generate_csv($order_id);
-        echo \$csv;
+        \$ids = array_map('intval', explode(',', '${order_ids}'));
+        \$orders = [];
+        foreach (\$ids as \$id) { \$o = wc_get_order(\$id); if (\$o) \$orders[] = \$o; }
+        if (empty(\$orders)) { echo 'NO_ORDERS'; exit; }
+        \$date_calc = new MME_Delivery_Date_Calculator();
+        \$box_calc  = new MME_Box_Calculator();
+        \$delivery_dates = []; \$box_data = [];
+        foreach (\$orders as \$order) {
+            \$delivery_dates[\$order->get_id()] = \$date_calc->calculate(\$order);
+            \$box_data[\$order->get_id()]       = \$box_calc->calculate(\$order);
+        }
+        \$packing = new MME_Packing_List_Builder();
+        echo \$packing->build(\$orders, \$delivery_dates, \$box_data);
+    " 2>/dev/null
+}
+
+# Return the box calculation JSON for a single order.
+get_box_data() {
+    local order_id="$1"
+    wp_cmd eval "
+        \$order = wc_get_order($order_id);
+        if (!\$order) { echo 'NO_ORDER'; exit; }
+        \$box_calc = new MME_Box_Calculator();
+        echo json_encode(\$box_calc->calculate(\$order));
     " 2>/dev/null
 }
 

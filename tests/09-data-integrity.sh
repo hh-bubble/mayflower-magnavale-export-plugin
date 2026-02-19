@@ -16,14 +16,7 @@ mkdir -p "$CSV_DIR"
 
 get_csv() {
     local oid="$1"
-    local out="${CSV_DIR}/int_${oid}.csv"
-    wp_cmd eval "
-        if (class_exists('Mayflower_Magnavale_CSV_Exporter')) {
-            \$e = new Mayflower_Magnavale_CSV_Exporter();
-            file_put_contents('$out', \$e->generate_csv($oid));
-        }
-    " 2>/dev/null
-    [[ -f "$out" ]] && cat "$out"
+    generate_test_csv "$oid"
 }
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -33,24 +26,13 @@ log_info "Testing idempotent CSV generation..."
 set_random_address
 oid=$(create_tagged_test_order "integrity_idempotent" "CB41:2" "EFR12227:1")
 if [[ -n "$oid" ]]; then
-    CSV1=$(wp_cmd eval "
-        if (class_exists('Mayflower_Magnavale_CSV_Exporter')) {
-            \$e = new Mayflower_Magnavale_CSV_Exporter();
-            echo md5(\$e->generate_csv($oid));
-        } else { echo 'SKIP'; }
-    " 2>/dev/null)
-    
-    CSV2=$(wp_cmd eval "
-        if (class_exists('Mayflower_Magnavale_CSV_Exporter')) {
-            \$e = new Mayflower_Magnavale_CSV_Exporter();
-            echo md5(\$e->generate_csv($oid));
-        } else { echo 'SKIP'; }
-    " 2>/dev/null)
-    
-    if [[ "$CSV1" != "SKIP" ]]; then
+    CSV1=$(generate_test_csv "$oid" | md5sum | awk '{print $1}')
+    CSV2=$(generate_test_csv "$oid" | md5sum | awk '{print $1}')
+
+    if [[ -n "$CSV1" && "$CSV1" != "d41d8cd98f00b204e9800998ecf8427e" ]]; then
         assert_equals "Idempotent CSV (same hash)" "$CSV1" "$CSV2"
     else
-        skip_test "Idempotent CSV" "Export class not found"
+        skip_test "Idempotent CSV" "No CSV generated"
     fi
 fi
 
@@ -153,16 +135,11 @@ log_info "Testing export status tracking..."
 set_random_address
 oid=$(create_tagged_test_order "integrity_status" "CB41:1")
 if [[ -n "$oid" ]]; then
-    # Check if the plugin marks orders as exported
-    wp_cmd eval "
-        if (class_exists('Mayflower_Magnavale_CSV_Exporter')) {
-            \$e = new Mayflower_Magnavale_CSV_Exporter();
-            \$e->generate_csv($oid);
-        }
-    " 2>/dev/null
-    
-    EXPORTED_META=$(wp_cmd post meta get "$oid" _magnavale_exported 2>/dev/null || \
-                    wp_cmd post meta get "$oid" _mayflower_exported 2>/dev/null || \
+    # Generate CSV via the plugin pipeline
+    generate_test_csv "$oid" > /dev/null
+
+    EXPORTED_META=$(wp_cmd post meta get "$oid" _magnavale_export_status 2>/dev/null || \
+                    wp_cmd post meta get "$oid" _magnavale_exported 2>/dev/null || \
                     echo "")
     
     if [[ -n "$EXPORTED_META" ]]; then

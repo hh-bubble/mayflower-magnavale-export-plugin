@@ -132,18 +132,11 @@ TEST_CITY='@SUM(A1:A10)'
 export TEST_FIRST_NAME TEST_LAST_NAME TEST_ADDRESS TEST_CITY
 order_id=$(create_tagged_test_order "sec_csv_inject" "CB41:1")
 if [[ -n "$order_id" ]]; then
-    CSV_FILE="/tmp/mvtest_sec_inject_${TIMESTAMP}.csv"
-    scan_plugin "
-        if (class_exists('Mayflower_Magnavale_CSV_Exporter')) {
-            \$e = new Mayflower_Magnavale_CSV_Exporter();
-            file_put_contents('$CSV_FILE', \$e->generate_csv($order_id));
-        }
-    " > /dev/null 2>&1
-    if [[ -f "$CSV_FILE" ]]; then
+    csv_content=$(generate_test_csv "$order_id")
+    if [[ -n "$csv_content" && "$csv_content" != "NO_ORDERS" ]]; then
         for pattern in '=CMD' '+HYPERLINK' '-1+1|cmd' '@SUM'; do
-            assert_not_contains "B5: No '$pattern' in CSV" "$(cat "$CSV_FILE")" "$pattern"
+            assert_not_contains "B5: No '$pattern' in CSV" "$csv_content" "$pattern"
         done
-        rm -f "$CSV_FILE"
     else
         skip_test "B5: CSV injection" "Could not generate CSV"
     fi
@@ -152,15 +145,17 @@ fi
 # ═══ C: CREDENTIAL SECURITY ═══
 log_info "═══ C: CREDENTIAL SECURITY ═══"
 
-HARDCODED=$(scan_plugin "
+HARDCODED=$(wp_cmd eval "
+    \$dir = WP_PLUGIN_DIR . '/mayflower-magnavale-export/';
+    \$files = array_merge(glob(\$dir.'*.php'), glob(\$dir.'**/*.php'));
     \$h = 0;
     foreach (\$files as \$f) {
         \$c = file_get_contents(\$f);
-        if (preg_match('/ftp_login\s*\([^,]+,\s*[\"\\\\'][a-zA-Z]/', \$c)) \$h++;
-        if (preg_match('/password\s*=\s*[\"\\\\'][a-zA-Z0-9]{3,}/', \$c)) \$h++;
+        if (preg_match('/ftp_login\s*\([^,]+,\s*[\\x27\\x22][a-zA-Z]/', \$c)) \$h++;
+        if (preg_match('/password\s*=\s*[\\x27\\x22][a-zA-Z0-9]{3,}/', \$c)) \$h++;
     }
     echo \$h;
-")
+" 2>/dev/null)
 assert_equals "C1: No hardcoded credentials" "0" "${HARDCODED:-0}"
 
 LOG_LEAK=$(scan_plugin "
