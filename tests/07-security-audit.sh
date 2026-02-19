@@ -17,7 +17,7 @@ scan_plugin() {
         \$dir = WP_PLUGIN_DIR . '/mayflower-magnavale-export/';
         \$files = array_merge(glob(\$dir.'*.php'), glob(\$dir.'**/*.php'));
         $php_code
-    " 2>/dev/null
+    " 2>/dev/null || true
 }
 
 # ═══ A: FILE SYSTEM SECURITY ═══

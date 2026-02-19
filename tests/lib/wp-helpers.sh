@@ -105,11 +105,11 @@ create_test_order() {
         --status=processing \
         --billing='{"first_name":"'"$customer_first"'","last_name":"'"$customer_last"'","email":"'"$customer_email"'","phone":"'"$phone"'","address_1":"'"$address_1"'","city":"'"$city"'","postcode":"'"$postcode"'","country":"GB"}' \
         --shipping='{"first_name":"'"$customer_first"'","last_name":"'"$customer_last"'","address_1":"'"$address_1"'","city":"'"$city"'","postcode":"'"$postcode"'","country":"GB"}' \
-        --user=0 \
+        --user=1 \
         --porcelain 2>/dev/null)
 
     if [[ -z "$order_id" ]]; then
-        log_fail "Failed to create order"
+        log_fail "Failed to create order" >&2
         return 1
     fi
 
@@ -141,7 +141,7 @@ create_test_order() {
             \$order->calculate_totals();
             \$order->save();
             echo 'OK';
-        " 2>/dev/null
+        " > /dev/null 2>&1
     done
 
     echo "$order_id"

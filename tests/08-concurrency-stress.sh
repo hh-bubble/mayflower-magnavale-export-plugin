@@ -127,7 +127,7 @@ if [[ -n "$large_order" ]]; then
         \$used_mb = round((\$after - \$before) / 1024 / 1024, 2);
         \$peak_mb = round(memory_get_peak_usage(true) / 1024 / 1024, 2);
         echo \"used:\$used_mb|peak:\$peak_mb\";
-    " 2>/dev/null)
+    " 2>/dev/null || true)
 
     log_info "  Memory: $MEM_RESULT"
     PEAK=$(echo "$MEM_RESULT" | grep -oP 'peak:\K[0-9.]+')
