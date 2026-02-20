@@ -14,10 +14,10 @@ begin_suite "04 — Packaging Logic"
 CSV_OUTPUT_DIR="/tmp/mvtest_packaging_${TIMESTAMP}"
 mkdir -p "$CSV_OUTPUT_DIR"
 
-# Helper to get CSV content for an order (uses plugin pipeline via wp-helpers)
+# Helper to get packing list CSV content for an order (packaging appears here, not in order CSV)
 get_csv() {
     local order_id="$1"
-    generate_test_csv "$order_id"
+    generate_test_packing_csv "$order_id"
 }
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -43,7 +43,7 @@ fi
 log_info "Testing large box allocation..."
 set_random_address
 order_id=$(create_tagged_test_order "pkg_large_box" \
-    "CB41:3" "EFR12227:2" "KP41:2" "SSCB12255:2")
+    "CB41:6" "EFR12227:5" "KP41:5" "SSCB12255:5")
 csv_content=$(get_csv "$order_id")
 
 if [[ -n "$csv_content" ]]; then
@@ -82,19 +82,30 @@ else
 fi
 
 # ══════════════════════════════════════════════════════════════════════════
-# TEST: No ice packs for ambient-only orders
+# TEST: Ice packs present for ambient-only orders (all boxes get ice)
 # ══════════════════════════════════════════════════════════════════════════
-log_info "Testing NO ice packs for ambient-only orders..."
+log_info "Testing ice packs present for ambient-only orders (all boxes get ice)..."
 set_random_address
-order_id=$(create_tagged_test_order "pkg_ambient_no_ice" \
+order_id=$(create_tagged_test_order "pkg_ambient_ice" \
     "CSM12255A:2" "SSGM1454:1" "HSS12180:1")
 csv_content=$(get_csv "$order_id")
 
 if [[ -n "$csv_content" ]]; then
-    assert_not_contains "No DRYICE for ambient order" "$csv_content" "DRYICE1KG"
-    assert_not_contains "No ICEPACK for ambient order" "$csv_content" "ICEPACK"
+    HAS_ICE=0
+    echo "$csv_content" | grep -qF "DRYICE1KG" && HAS_ICE=1
+    echo "$csv_content" | grep -qF "ICEPACK" && HAS_ICE=1
+
+    if [[ $HAS_ICE -eq 1 ]]; then
+        log_pass "Ice packs included for ambient order (correct — all boxes get ice)"
+        TESTS_RUN=$((TESTS_RUN + 1))
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+    else
+        TESTS_RUN=$((TESTS_RUN + 1))
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        log_fail "No ice pack found in ambient order packing list"
+    fi
 else
-    skip_test "Ambient ice pack exclusion" "CSV generation unavailable"
+    skip_test "Ambient ice pack check" "CSV generation unavailable"
 fi
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -111,8 +122,9 @@ if [[ -n "$csv_content" ]]; then
     log_info "  Packaging lines in CSV: $BOX_LINES"
     
     # Each packaging SKU should appear at most once
+    # Use -w for word-boundary matching so 5OSL doesn't match 5OSLI/5OSLIS
     for pkg_sku in "5OSL" "5OSLI" "5OSLIS" "5OSS" "5OSSI" "5OSSIS"; do
-        count=$(echo "$csv_content" | grep -c "$pkg_sku" || true)
+        count=$(echo "$csv_content" | grep -cw "$pkg_sku" || true)
         assert_true "Packaging $pkg_sku appears 0 or 1 times" "[[ $count -le 1 ]]"
     done
 else

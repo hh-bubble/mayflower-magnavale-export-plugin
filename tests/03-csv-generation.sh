@@ -102,8 +102,11 @@ while read -r order_id; do
         # Test: Order number appears in CSV
         assert_contains "Order #$order_id referenced in CSV" "$(cat "$csv_file")" "$order_id"
         
-        # Test: Customer postcode present
-        postcode=$(wp_cmd post meta get "$order_id" _shipping_postcode 2>/dev/null)
+        # Test: Customer postcode present (use WC API for HPOS compatibility)
+        postcode=$(wp_cmd eval "
+            \$order = wc_get_order($order_id);
+            if (\$order) echo \$order->get_shipping_postcode() ?: \$order->get_billing_postcode();
+        " 2>/dev/null || true)
         if [[ -n "$postcode" ]]; then
             assert_contains "Postcode in CSV for order #$order_id" "$(cat "$csv_file")" "$postcode"
         fi

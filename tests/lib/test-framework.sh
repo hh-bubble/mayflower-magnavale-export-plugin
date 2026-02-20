@@ -128,7 +128,7 @@ assert_contains() {
     local needle="$3"
     TESTS_RUN=$((TESTS_RUN + 1))
 
-    if echo "$haystack" | grep -qF "$needle"; then
+    if echo "$haystack" | grep -qF -- "$needle"; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
         log_pass "$description"
     else
@@ -144,7 +144,7 @@ assert_not_contains() {
     local needle="$3"
     TESTS_RUN=$((TESTS_RUN + 1))
 
-    if echo "$haystack" | grep -qF "$needle"; then
+    if echo "$haystack" | grep -qF -- "$needle"; then
         TESTS_FAILED=$((TESTS_FAILED + 1))
         log_fail "$description"
         log_fail "  String should NOT contain: '$needle'"
@@ -255,9 +255,9 @@ assert_csv_row_count() {
         return
     fi
 
-    # Subtract 1 for header
+    # Count actual data rows (Magnavale CSVs have no header row)
     local actual_rows
-    actual_rows=$(( $(wc -l < "$filepath") - 1 ))
+    actual_rows=$(wc -l < "$filepath")
 
     if [[ $actual_rows -ge $min_rows ]]; then
         TESTS_PASSED=$((TESTS_PASSED + 1))

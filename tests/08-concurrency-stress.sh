@@ -130,9 +130,11 @@ if [[ -n "$large_order" ]]; then
     " 2>/dev/null || true)
 
     log_info "  Memory: $MEM_RESULT"
-    PEAK=$(echo "$MEM_RESULT" | grep -oP 'peak:\K[0-9.]+')
-    if [[ -n "$PEAK" ]]; then
-        assert_true "Peak memory under 128MB" "[[ \$(echo '$PEAK < 128' | bc -l) -eq 1 ]]"
+    # Check the differential memory (what the export actually used), not peak
+    # Peak includes WordPress/WooCommerce baseline (~200MB) which is not our concern
+    USED=$(echo "$MEM_RESULT" | grep -oP 'used:\K[0-9.]+')
+    if [[ -n "$USED" ]]; then
+        assert_true "Export memory usage under 32MB" "[[ \$(echo '${USED:-0} < 32' | bc -l) -eq 1 ]]"
     fi
 fi
 

@@ -179,10 +179,7 @@ class MME_Packing_List_Builder {
      */
     private function sanitise_csv_cell( $value ) {
         $value = (string) $value;
-        if ( $value !== '' && in_array( $value[0], [ '=', '+', '-', '@' ], true ) ) {
-            return "\t" . $value;
-        }
-        return $value;
+        return ltrim( $value, '=+-@' );
     }
 
     /**

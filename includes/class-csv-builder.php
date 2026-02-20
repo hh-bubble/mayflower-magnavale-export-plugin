@@ -122,17 +122,28 @@ class MME_CSV_Builder {
     private function build_shared_columns( $order, $delivery_date, $labels ) {
 
         // Customer name — use shipping name, fall back to billing
-        $first_name = $order->get_shipping_first_name() ?: $order->get_billing_first_name();
-        $last_name  = $order->get_shipping_last_name()  ?: $order->get_billing_last_name();
+        // Sanitise individual name parts before combining to prevent CSV injection
+        $first_name = $this->sanitise_csv_cell(
+            $order->get_shipping_first_name() ?: $order->get_billing_first_name()
+        );
+        $last_name = $this->sanitise_csv_cell(
+            $order->get_shipping_last_name() ?: $order->get_billing_last_name()
+        );
         $customer_name = trim( $first_name . ' ' . $last_name );
 
         // Customer ID — WP user ID, or 0 for guest checkout
         $customer_id = $order->get_customer_id() ?: 0;
 
-        // Address fields — use shipping address
-        $address_1 = $order->get_shipping_address_1() ?: $order->get_billing_address_1();
-        $address_2 = $order->get_shipping_address_2() ?: $order->get_billing_address_2();
-        $city      = $order->get_shipping_city()      ?: $order->get_billing_city();
+        // Address fields — use shipping address, sanitised against CSV injection
+        $address_1 = $this->sanitise_csv_cell(
+            $order->get_shipping_address_1() ?: $order->get_billing_address_1()
+        );
+        $address_2 = $this->sanitise_csv_cell(
+            $order->get_shipping_address_2() ?: $order->get_billing_address_2()
+        );
+        $city = $this->sanitise_csv_cell(
+            $order->get_shipping_city() ?: $order->get_billing_city()
+        );
         $postcode  = $order->get_shipping_postcode()   ?: $order->get_billing_postcode();
 
         // County — WooCommerce's state field can contain the country code (GB/UK)
@@ -143,6 +154,7 @@ class MME_CSV_Builder {
         if ( $county && $country && ( strtoupper( $county ) === strtoupper( $country ) || strtoupper( $county ) === 'UK' || strtoupper( $county ) === 'GB' ) ) {
             $county = '';
         }
+        $county = $this->sanitise_csv_cell( $county );
 
         // Phone and email — always from billing
         $phone = $order->get_billing_phone() ?: '';
@@ -176,18 +188,15 @@ class MME_CSV_Builder {
      * Sanitise a cell value to prevent CSV injection (Excel formula injection).
      *
      * If a cell starts with =, +, -, or @, Excel/LibreOffice may interpret it
-     * as a formula. Prepending a tab character neutralises this without visually
-     * affecting the data in most spreadsheet applications.
+     * as a formula. We strip these leading characters to prevent injection while
+     * keeping the data safe for Magnavale's automated import system.
      *
      * @param string $value The raw cell value
      * @return string The sanitised cell value
      */
     private function sanitise_csv_cell( $value ) {
         $value = (string) $value;
-        if ( $value !== '' && in_array( $value[0], [ '=', '+', '-', '@' ], true ) ) {
-            return "\t" . $value;
-        }
-        return $value;
+        return ltrim( $value, '=+-@' );
     }
 
     /**

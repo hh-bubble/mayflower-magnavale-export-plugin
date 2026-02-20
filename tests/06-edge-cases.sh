@@ -93,7 +93,11 @@ export TEST_FIRST_NAME TEST_LAST_NAME TEST_ADDRESS TEST_CITY TEST_POSTCODE TEST_
 
 order_id=$(create_tagged_test_order "edge_unicode" "CB41:1")
 if [[ -n "$order_id" ]]; then
-    NAME_CHECK=$(wp_cmd post meta get "$order_id" _shipping_first_name 2>/dev/null)
+    # Use wp eval to read order meta (compatible with HPOS); || true prevents set -e crash
+    NAME_CHECK=$(wp_cmd eval "
+        \$order = wc_get_order($order_id);
+        if (\$order) echo \$order->get_shipping_first_name();
+    " 2>/dev/null || true)
     log_info "  Stored name: '$NAME_CHECK'"
     assert_not_empty "Unicode name stored" "$NAME_CHECK"
 fi
@@ -124,10 +128,18 @@ log_info "Testing missing shipping address..."
 set_random_address
 order_id=$(create_tagged_test_order "edge_no_shipping" "CB41:1")
 if [[ -n "$order_id" ]]; then
-    # Clear shipping fields
-    for field in _shipping_first_name _shipping_last_name _shipping_address_1 _shipping_city _shipping_postcode; do
-        wp_cmd post meta update "$order_id" "$field" "" > /dev/null 2>&1
-    done
+    # Clear shipping fields via WooCommerce API (HPOS-compatible)
+    wp_cmd eval "
+        \$order = wc_get_order($order_id);
+        if (\$order) {
+            \$order->set_shipping_first_name('');
+            \$order->set_shipping_last_name('');
+            \$order->set_shipping_address_1('');
+            \$order->set_shipping_city('');
+            \$order->set_shipping_postcode('');
+            \$order->save();
+        }
+    " > /dev/null 2>&1 || true
     
     EXPORT_RESULT=$(generate_test_csv "$order_id")
 
