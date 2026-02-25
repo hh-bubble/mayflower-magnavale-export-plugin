@@ -79,11 +79,19 @@ class MME_Admin_Page {
         $this->add_time_field( 'mme_cutoff_time', 'Order Cut-off Time', '16:00', 'mme_schedule_section' );
 
         // ---- Alert Section ----
-        add_settings_section( 'mme_alert_section', 'Alerts', function() {
-            echo '<p>Email address to receive failure alerts.</p>';
+        add_settings_section( 'mme_alert_section', 'Notifications', function() {
+            echo '<p>Email addresses to receive export notifications (success and failure). Separate multiple addresses with commas.</p>';
         }, 'mayflower-magnavale' );
 
-        $this->add_text_field( 'mme_alert_email', 'Alert Email', 'holly@bubbledesign.co.uk', false, 'mme_alert_section' );
+        add_settings_field( 'mme_alert_emails', 'Notification Emails', function() {
+            $value = get_option( 'mme_alert_emails', '' );
+            // Fall back to legacy single email if new option is empty
+            if ( empty( $value ) ) {
+                $value = get_option( 'mme_alert_email', 'holly@bubbledesign.co.uk' );
+            }
+            echo '<textarea name="mme_alert_emails" rows="3" class="large-text">' . esc_textarea( $value ) . '</textarea>';
+            echo '<p class="description">Comma-separated list of email addresses, e.g. holly@bubbledesign.co.uk, rob@bubbledesign.co.uk</p>';
+        }, 'mayflower-magnavale', 'mme_alert_section' );
 
         // ---- Register all settings with appropriate sanitize callbacks ----
 
@@ -113,7 +121,7 @@ class MME_Admin_Page {
         $plain_fields = [
             'mme_sftp_port', 'mme_sftp_remote_dir',
             'mme_account_ref', 'mme_courier', 'mme_dpd_service',
-            'mme_cutoff_time', 'mme_alert_email',
+            'mme_cutoff_time', 'mme_alert_emails',
         ];
 
         foreach ( $plain_fields as $field ) {

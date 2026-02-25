@@ -286,4 +286,19 @@ echo "Order IDs: {$order_ids_str}" . PHP_EOL;
 mme_test_log( "=== Day batch complete: {$success_count} created, {$failed_orders} failed ===", $log_file );
 mme_test_log( "Order IDs: {$order_ids_str}", $log_file );
 
+// Send notification email
+if ( function_exists( 'mme_send_notification' ) ) {
+    $status = $failed_orders > 0 ? 'Partial' : 'Success';
+    mme_send_notification(
+        "[Mayflower Export] Test Orders Created — {$success_count} orders",
+        sprintf(
+            "Test order creation completed at %s.\n\nOrders created: %d\nFailed: %d\nOrder IDs: %s\n\nThese orders are now pending export and will be picked up by the next export run.",
+            date( 'Y-m-d H:i:s' ),
+            $success_count,
+            $failed_orders,
+            $order_ids_str
+        )
+    );
+}
+
 exit( $failed_orders > 0 ? 1 : 0 );

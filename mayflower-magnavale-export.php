@@ -319,6 +319,20 @@ function mme_run_export() {
             'packing_file'    => $packing_filename,
         ] );
 
+        // Send success notification
+        $order_ids_list = implode( ', ', array_map( fn( $o ) => '#' . $o->get_id(), $orders ) );
+        mme_send_notification(
+            '[Mayflower Export] Success — ' . count( $orders ) . ' orders exported',
+            sprintf(
+                "The Magnavale export completed successfully at %s.\n\nOrders exported: %d\nOrder IDs: %s\n\nFiles uploaded:\n- %s\n- %s",
+                current_time( 'mysql' ),
+                count( $orders ),
+                $order_ids_list,
+                $order_filename,
+                $packing_filename
+            )
+        );
+
     } else {
         // Log the failure — don't mark orders as exported so they get retried
         MME_Export_Logger::log( 'failed', sprintf(
@@ -329,11 +343,9 @@ function mme_run_export() {
             'error'       => $upload_result['error'],
         ] );
 
-        // Send email alert to admin about the failure
-        $admin_email = get_option( 'mme_alert_email', 'holly@bubbledesign.co.uk' );
-        wp_mail(
-            $admin_email,
-            '[Mayflower Export] FTPS Upload Failed',
+        // Send failure notification
+        mme_send_notification(
+            '[Mayflower Export] FAILED — FTPS Upload Error',
             sprintf(
                 "The Magnavale export failed at %s.\n\nError: %s\n\n%d orders are still pending and will be retried on the next run.",
                 current_time( 'mysql' ),

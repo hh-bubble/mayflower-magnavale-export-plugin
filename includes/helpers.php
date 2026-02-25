@@ -68,3 +68,41 @@ function mme_get_expanded_items( $order ) {
 
     return $items;
 }
+
+/**
+ * Get the list of admin notification email addresses.
+ *
+ * Reads from the mme_alert_emails option (comma-separated).
+ * Falls back to the legacy single mme_alert_email option.
+ *
+ * @return string[] Array of trimmed, valid email addresses
+ */
+function mme_get_alert_emails() {
+    $emails_str = get_option( 'mme_alert_emails', '' );
+
+    // Fall back to legacy single email option
+    if ( empty( $emails_str ) ) {
+        $emails_str = get_option( 'mme_alert_email', 'holly@bubbledesign.co.uk' );
+    }
+
+    $emails = array_map( 'trim', explode( ',', $emails_str ) );
+    $emails = array_filter( $emails, 'is_email' );
+
+    return array_values( $emails );
+}
+
+/**
+ * Send a notification email to all configured admin addresses.
+ *
+ * @param string $subject Email subject line
+ * @param string $message Email body (plain text)
+ */
+function mme_send_notification( $subject, $message ) {
+    $emails = mme_get_alert_emails();
+
+    if ( empty( $emails ) ) {
+        return;
+    }
+
+    wp_mail( $emails, $subject, $message );
+}
