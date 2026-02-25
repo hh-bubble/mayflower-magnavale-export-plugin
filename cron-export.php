@@ -1,3 +1,4 @@
+#!/usr/local/bin/php.cli
 <?php
 /**
  * Server Cron Entry Point — Magnavale Export
@@ -6,16 +7,11 @@
  * Magnavale export. It bootstraps WordPress, acquires a file lock to prevent
  * overlapping runs, and calls mme_run_export().
  *
- * CRONTAB SETUP:
- * ==============
- * Add the following to the server's crontab (crontab -e):
- *
- *   CRON_TZ=Europe/London
- *   1 16 * * * /usr/bin/flock -n /tmp/mme-export.lock /usr/bin/php /path/to/wp-content/plugins/mayflower-magnavale-export/cron-export.php >> /var/log/mme-export.log 2>&1
- *
- * This runs at 16:01 UK time every day (1 minute after the 16:00 cut-off).
- * CRON_TZ=Europe/London handles BST/GMT transitions automatically.
- * flock -n prevents overlapping runs if a previous export is still in progress.
+ * HOSTING PANEL SETUP (ICDSoft/SureServer):
+ * ==========================================
+ * Cron: Hour 11, Every 60 minutes, Mon-Fri → crontab: 13 11 * * 1,2,3,4,5
+ * This fires at 11:13 server time (UTC-5) = ~16:13 UK time, after the
+ * 16:00 order cut-off. The panel auto-assigns minute 13.
  *
  * MANUAL BACKUP:
  * ==============
@@ -38,8 +34,6 @@ if ( php_sapi_name() !== 'cli' ) {
 // ============================================================================
 // FILE LOCK — Prevent concurrent execution
 // ============================================================================
-// This is a second layer of protection in addition to flock in the crontab.
-// Handles edge cases where the script is called directly without flock.
 
 $lock_file = sys_get_temp_dir() . '/mme-export.lock';
 $lock_fp   = fopen( $lock_file, 'w' );
