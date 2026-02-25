@@ -291,13 +291,13 @@ function mme_test_log( $message, $log_file = null ) {
 }
 
 /**
- * Bootstrap WordPress from a script inside the testing/ directory.
- * Handles the standard plugin path: wp-content/plugins/mayflower-magnavale-export/testing/
+ * Bootstrap WordPress from a script inside the tests/ directory.
+ * Handles the standard plugin path: wp-content/plugins/mayflower-magnavale-export/tests/
  *
  * @return bool True if WordPress loaded successfully
  */
 function mme_test_bootstrap_wp() {
-    // From testing/lib/ → plugin dir → plugins → wp-content → WordPress root
+    // From tests/lib/ → plugin dir → plugins → wp-content → WordPress root
     $wp_load = dirname( __DIR__, 2 ) . '/../../../wp-load.php';
 
     if ( ! file_exists( $wp_load ) ) {

@@ -5,7 +5,7 @@
  * Creates 5 orders from different customers with different product mixes.
  * Tests multi-order batching, CSV row separation, and packing aggregation.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/03-multiple-orders.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/03-multiple-orders.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

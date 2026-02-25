@@ -1,6 +1,9 @@
-# Mayflower Magnavale Export — Testing Suite
+# Mayflower Magnavale Export — Test Suite
 
-Testing framework for the 2-week soft rollout on staging before go-live.
+All tests live in this `tests/` directory. There are two complementary suites:
+
+1. **Automated bash tests** (`01-10 .sh` scripts) — run locally or via SSH with WP-CLI
+2. **PHP staging tests** (`manual/`, `security/`, `validate/`, cron) — create real WooCommerce orders on the staging site
 
 **Staging site:** mayflower.bubblestaging.com
 **Server:** s460.sureserver.com (ICDSoft, UTC-5)
@@ -9,7 +12,63 @@ Testing framework for the 2-week soft rollout on staging before go-live.
 
 ---
 
-## Cron Job Setup (ICDSoft Hosting Panel)
+## Directory Structure
+
+```
+tests/
+├── lib/
+│   ├── test-framework.sh       # Bash test framework (assertions, logging)
+│   ├── wp-helpers.sh           # WP-CLI helpers (order creation, CSV gen)
+│   └── test-helpers.php        # PHP helpers (product catalog, customers)
+│
+├── 01-product-sku-audit.sh     # Verify all 47 SKUs exist in WooCommerce
+├── 02-order-creation.sh        # Create 10+ diverse test scenarios
+├── 03-csv-generation.sh        # Validate CSV format, content, encoding
+├── 04-packaging-logic.sh       # Box sizes, inserts, ice packs
+├── 05-ftp-upload.sh            # FTPS connectivity and upload
+├── 06-edge-cases.sh            # Zero qty, cancelled orders, Unicode, long fields
+├── 07-security-audit.sh        # Code scan for vulnerabilities
+├── 08-concurrency-stress.sh    # Parallel orders, memory, timing
+├── 09-data-integrity.sh        # Idempotency, accuracy, no data leakage
+├── 10-regression-cleanup.sh    # Delete test data after automated run
+├── run-all-tests.sh            # Master runner for suites 01-10
+│
+├── manual/                     # PHP scripts for staging order creation
+│   ├── 01-single-small-order.php ... 13-zero-orders-day.php
+│
+├── security/                   # PHP scripts for injection/payload testing
+│   ├── test-csv-injection.php ... test-unicode-injection.php
+│
+├── validate/                   # Bash scripts for post-export CSV checks
+│   ├── validate-csv-format.sh ... validate-no-csv-injection.sh
+│
+├── cron-create-test-orders.php # Daily automated order creator (10-60 orders)
+├── cleanup.php                 # Delete all TEST- orders and temp files
+└── README.md
+```
+
+---
+
+## 1. Automated Bash Test Suite
+
+Requires WP-CLI. Run all 10 suites in order:
+
+```bash
+bash tests/run-all-tests.sh
+```
+
+Or run individual suites:
+
+```bash
+bash tests/01-product-sku-audit.sh
+bash tests/04-packaging-logic.sh
+```
+
+Set `SKIP_FTP=1` to skip FTP tests, `SKIP_CLEANUP=1` to preserve test orders.
+
+---
+
+## 2. Staging Cron Setup (ICDSoft Hosting Panel)
 
 You need **2 cron jobs** during the testing period (max 3 allowed):
 
@@ -17,7 +76,7 @@ You need **2 cron jobs** during the testing period (max 3 allowed):
 
 | Setting | Value |
 |---|---|
-| Script | `/home/mayflower/www/www/wp-content/plugins/mayflower-magnavale-export/testing/cron-create-test-orders.php` |
+| Script | `/home/mayflower/www/www/wp-content/plugins/mayflower-magnavale-export/tests/cron-create-test-orders.php` |
 | Hour | `10` |
 | Minute | Every 60 minutes |
 | Day of week | Mon, Tue, Wed, Thu, Fri |
@@ -27,7 +86,7 @@ Creates 10-60 varied test orders covering all products daily.
 
 **Don't forget:** `chmod 775` on the script after uploading:
 ```bash
-chmod 775 /home/mayflower/www/www/wp-content/plugins/mayflower-magnavale-export/testing/cron-create-test-orders.php
+chmod 775 /home/mayflower/www/www/wp-content/plugins/mayflower-magnavale-export/tests/cron-create-test-orders.php
 ```
 
 ### Cron 2: Magnavale Export (PERMANENT)
@@ -43,12 +102,12 @@ This fires at ~11:13 server time = ~16:13 UK time (after the 16:00 cut-off).
 
 ---
 
-## Running Manual Tests
+## 3. Running Manual Tests
 
 SSH into the server and run any script directly:
 
 ```bash
-/usr/local/bin/php.cli /home/mayflower/www/www/wp-content/plugins/mayflower-magnavale-export/testing/manual/01-single-small-order.php
+/usr/local/bin/php.cli /home/mayflower/www/www/wp-content/plugins/mayflower-magnavale-export/tests/manual/01-single-small-order.php
 ```
 
 After creating orders, trigger the export either:
@@ -86,37 +145,37 @@ After creating orders, trigger the export either:
 
 ---
 
-## Running Validation Scripts
+## 4. Running Validation Scripts
 
 After an export completes, validate the CSV output:
 
 ```bash
 cd /home/mayflower/www/www/wp-content/plugins/mayflower-magnavale-export/
-bash testing/validate/validate-csv-format.sh
-bash testing/validate/validate-skus.sh
-bash testing/validate/validate-delivery-dates.sh
-bash testing/validate/validate-packaging.sh
-bash testing/validate/validate-ftps-upload.sh
-bash testing/validate/validate-no-csv-injection.sh
+bash tests/validate/validate-csv-format.sh
+bash tests/validate/validate-skus.sh
+bash tests/validate/validate-delivery-dates.sh
+bash tests/validate/validate-packaging.sh
+bash tests/validate/validate-ftps-upload.sh
+bash tests/validate/validate-no-csv-injection.sh
 ```
 
 Or run all at once:
 ```bash
-for v in testing/validate/*.sh; do echo ""; bash "$v"; done
+for v in tests/validate/*.sh; do echo ""; bash "$v"; done
 ```
 
 ---
 
-## Cleanup
+## 5. Cleanup
 
 Before go-live, remove all test data:
 
 ```bash
 # Preview what will be deleted
-/usr/local/bin/php.cli testing/cleanup.php --dry-run
+/usr/local/bin/php.cli tests/cleanup.php --dry-run
 
 # Actually delete
-/usr/local/bin/php.cli testing/cleanup.php
+/usr/local/bin/php.cli tests/cleanup.php
 ```
 
 Options:

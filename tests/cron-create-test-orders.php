@@ -32,13 +32,13 @@ if ( php_sapi_name() !== 'cli' ) {
 // ============================================================================
 // BOOTSTRAP WORDPRESS
 // ============================================================================
-// From testing/ → plugin dir → plugins → wp-content → WordPress root
+// From tests/ → plugin dir → plugins → wp-content → WordPress root
 
 $wp_load = dirname( __FILE__ ) . '/../../../../../../wp-load.php';
 
 // Try alternate paths if the standard one doesn't work
 if ( ! file_exists( $wp_load ) ) {
-    // Try: testing/ is inside the plugin dir
+    // Try: tests/ is inside the plugin dir
     $wp_load = dirname( __FILE__ ) . '/../../../wp-load.php';
 }
 if ( ! file_exists( $wp_load ) ) {

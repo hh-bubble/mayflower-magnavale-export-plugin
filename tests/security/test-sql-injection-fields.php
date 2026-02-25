@@ -5,7 +5,7 @@
  * Creates orders with SQL injection patterns in address and order notes.
  * These should not affect the database and should appear as literal text in CSV.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/security/test-sql-injection-fields.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/security/test-sql-injection-fields.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

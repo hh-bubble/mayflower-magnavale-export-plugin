@@ -5,7 +5,7 @@
  * Creates orders with extremely long name and address strings.
  * Tests buffer handling — should not crash or corrupt CSV structure.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/security/test-oversized-fields.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/security/test-oversized-fields.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

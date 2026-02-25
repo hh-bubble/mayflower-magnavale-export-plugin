@@ -5,7 +5,7 @@
  * Creates orders with only ambient products (sauces, sauce mixes) — no frozen items.
  * Tests whether ice packs are still added (question: do ambient-only orders need ice?).
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/06-sauce-only-order.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/06-sauce-only-order.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

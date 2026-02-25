@@ -5,7 +5,7 @@
  * Creates 1 order containing items from every product category:
  * dim sum, noodles, meals, sauces, sauce pots, sauce mixes, catering tubs.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/07-mixed-categories.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/07-mixed-categories.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

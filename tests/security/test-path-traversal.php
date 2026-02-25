@@ -5,7 +5,7 @@
  * Creates orders with path traversal patterns in address fields.
  * These should not allow access to files outside the export directory.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/security/test-path-traversal.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/security/test-path-traversal.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

@@ -5,7 +5,7 @@
  * Deletes all WooCommerce orders where the billing first name starts with "TEST-".
  * Also cleans up test log files and archived CSVs from test runs.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/cleanup.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/cleanup.php
  *
  * Options:
  *   --dry-run    Show what would be deleted without actually deleting

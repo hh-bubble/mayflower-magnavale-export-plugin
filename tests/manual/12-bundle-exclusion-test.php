@@ -12,7 +12,7 @@
  *
  * Bundle IDs: 15141, 15049, 15047, 15045, 15043, 15041
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/12-bundle-exclusion-test.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/12-bundle-exclusion-test.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

@@ -5,7 +5,7 @@
  * Creates 20 orders with randomised products (2-6 items each).
  * Tests realistic peak-day volume.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/08-stress-test-20-orders.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/08-stress-test-20-orders.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

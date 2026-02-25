@@ -5,7 +5,7 @@
  * Creates 1 order containing every single exportable product in the catalog.
  * Tests completeness: every SKU should appear in the CSV.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/11-max-single-order.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/11-max-single-order.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

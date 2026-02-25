@@ -8,7 +8,7 @@
  *   - No empty CSV uploaded to FTPS
  *   - Export log shows "No orders" message
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/13-zero-orders-day.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/13-zero-orders-day.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }
@@ -24,4 +24,4 @@ echo "  3. Export log shows 'No pending orders found' or similar" . PHP_EOL;
 echo "  4. No unnecessary alert emails are sent" . PHP_EOL;
 echo PHP_EOL;
 echo "If there are existing pending orders from other tests, clean them up first:" . PHP_EOL;
-echo "  /usr/local/bin/php.cli /path/to/testing/cleanup.php" . PHP_EOL;
+echo "  /usr/local/bin/php.cli /path/to/tests/cleanup.php" . PHP_EOL;

@@ -6,7 +6,7 @@
  * ampersands, commas, quotes, Welsh/Irish characters, hyphenated names.
  * Tests CSV field escaping and encoding.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/04-edge-case-names.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/04-edge-case-names.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

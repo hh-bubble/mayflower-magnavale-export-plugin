@@ -13,7 +13,7 @@
  *
  * This creates orders at: 18, 19, 33, 34, 51, 52, 66, 67 pieces.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/05-boundary-quantities.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/05-boundary-quantities.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

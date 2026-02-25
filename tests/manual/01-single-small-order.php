@@ -4,7 +4,7 @@
  * Manual Test 01: Single Small Order
  * Creates 1 order with 1-2 frozen items. Simplest possible export test.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/01-single-small-order.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/01-single-small-order.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

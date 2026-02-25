@@ -6,7 +6,7 @@
  * and order notes. When opened in Excel, cells starting with = + - @ | can
  * execute formulas — the plugin MUST neutralise these.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/security/test-csv-injection.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/security/test-csv-injection.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

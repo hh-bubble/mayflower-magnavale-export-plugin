@@ -5,7 +5,7 @@
  * Creates orders where the same product appears multiple times as separate line items.
  * Tests whether the CSV and packing list handle duplicate SKUs correctly.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/10-duplicate-products.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/10-duplicate-products.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

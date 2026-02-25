@@ -5,7 +5,7 @@
  * Creates 1 order with 10+ items across all categories.
  * Tests large box combinations and mixed product handling.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/manual/02-single-large-order.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/manual/02-single-large-order.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

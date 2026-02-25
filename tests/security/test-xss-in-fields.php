@@ -6,7 +6,7 @@
  * The CSV output must not contain raw HTML that could be dangerous if
  * the data is ever displayed in a web context.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/security/test-xss-in-fields.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/security/test-xss-in-fields.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }

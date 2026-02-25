@@ -6,7 +6,7 @@
  * combining diacriticals, and non-Latin scripts.
  * Tests that CSV structure is not corrupted by Unicode edge cases.
  *
- * Run via SSH: /usr/local/bin/php.cli /path/to/testing/security/test-unicode-injection.php
+ * Run via SSH: /usr/local/bin/php.cli /path/to/tests/security/test-unicode-injection.php
  */
 
 if ( php_sapi_name() !== 'cli' ) { exit( 1 ); }
