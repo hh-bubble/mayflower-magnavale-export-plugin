@@ -245,6 +245,9 @@ function mme_test_create_order( $customer, $items, $options = [] ) {
  */
 function mme_test_pick_products( $products, $count, $min_qty = 1, $max_qty = 4 ) {
     $count = min( $count, count( $products ) );
+    if ( $count <= 0 ) {
+        return [];
+    }
     $keys  = array_rand( $products, $count );
     if ( ! is_array( $keys ) ) {
         $keys = [ $keys ];
