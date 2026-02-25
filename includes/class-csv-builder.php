@@ -67,40 +67,26 @@ class MME_CSV_Builder {
             // Build the shared customer/address data for this order
             $shared = $this->build_shared_columns( $order, $delivery_date, $labels );
 
-            // Loop through each line item in the order
-            foreach ( $order->get_items() as $item ) {
-                $product = $item->get_product();
-                $quantity = intval( $item->get_quantity() );
+            // Loop through each line item, expanding bundles into components
+            foreach ( mme_get_expanded_items( $order ) as $expanded ) {
+                $product  = $expanded['product'];
+                $quantity = $expanded['qty'];
 
-                // Skip items with 0 quantity
-                if ( $quantity <= 0 ) {
-                    continue;
-                }
+                $sku = $product->get_sku();
 
-                // Get the Magnavale product code (SKU)
-                // IMPORTANT: WooCommerce SKUs MUST match Magnavale codes.
-                // If they don't match, we log a warning and use the WooCommerce SKU as-is.
-                $sku = '';
-                if ( $product ) {
-                    $sku = $product->get_sku();
-                }
-
-                // If no SKU found, log warning and use a placeholder
                 if ( empty( $sku ) ) {
-                    // TODO: Log warning — this order has a product with no SKU
-                    $sku = 'MISSING_SKU_' . $item->get_product_id();
+                    $sku = 'MISSING_SKU_' . $product->get_id();
                     error_log( sprintf(
                         '[Mayflower Export] WARNING: Order #%d has product with no SKU (product ID: %d).',
                         $order_id,
-                        $item->get_product_id()
+                        $product->get_id()
                     ) );
                 }
 
-                // Build the product-specific columns and merge with shared columns
                 $row = $shared;
-                $row[12] = $sku;                    // M: Product Code
-                $row[13] = $this->sanitise_csv_cell( $item->get_name() ); // N: Product Description
-                $row[14] = $quantity;                // O: Quantity
+                $row[12] = $sku;                                            // M: Product Code
+                $row[13] = $this->sanitise_csv_cell( $expanded['name'] );   // N: Product Description
+                $row[14] = $quantity;                                        // O: Quantity
 
                 $rows[] = $row;
             }

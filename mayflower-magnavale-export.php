@@ -64,6 +64,9 @@ define( 'MME_DPD_SERVICE',  '1^12' );  // DPD 12:00 service code — TBC with Ma
  * simple and WordPress-native.
  */
 function mme_load_classes() {
+    // Shared helper functions (must load before classes that use them)
+    require_once MME_PLUGIN_DIR . 'includes/helpers.php';
+
     // Core business logic classes
     require_once MME_PLUGIN_DIR . 'includes/class-order-collector.php';
     require_once MME_PLUGIN_DIR . 'includes/class-delivery-date-calculator.php';

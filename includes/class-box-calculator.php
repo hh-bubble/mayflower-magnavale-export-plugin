@@ -96,11 +96,8 @@ class MME_Box_Calculator {
         // "1 piece" = 1 unit of any product (quantity from the line item)
         $total_pieces = 0;
 
-        foreach ( $order->get_items() as $item ) {
-            $qty = intval( $item->get_quantity() );
-            if ( $qty > 0 ) {
-                $total_pieces += $qty;
-            }
+        foreach ( mme_get_expanded_items( $order ) as $expanded ) {
+            $total_pieces += $expanded['qty'];
         }
 
         // Edge case: if somehow an order has 0 pieces, return empty

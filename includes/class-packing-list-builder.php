@@ -72,21 +72,13 @@ class MME_Packing_List_Builder {
         $product_totals = [];
 
         foreach ( $orders as $order ) {
-            foreach ( $order->get_items() as $item ) {
-                $product  = $item->get_product();
-                $quantity = intval( $item->get_quantity() );
+            foreach ( mme_get_expanded_items( $order ) as $expanded ) {
+                $product  = $expanded['product'];
+                $quantity = $expanded['qty'];
 
-                if ( $quantity <= 0 ) {
-                    continue;
-                }
-
-                // Get the SKU (should match Magnavale product code)
-                $sku = '';
-                if ( $product ) {
-                    $sku = $product->get_sku();
-                }
+                $sku = $product->get_sku();
                 if ( empty( $sku ) ) {
-                    $sku = 'MISSING_SKU_' . $item->get_product_id();
+                    $sku = 'MISSING_SKU_' . $product->get_id();
                 }
 
                 // Aggregate by SKU
@@ -95,7 +87,7 @@ class MME_Packing_List_Builder {
                 } else {
                     $product_totals[ $sku ] = [
                         'code' => $sku,
-                        'desc' => $item->get_name(),
+                        'desc' => $expanded['name'],
                         'qty'  => $quantity,
                     ];
                 }
