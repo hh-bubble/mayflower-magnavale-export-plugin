@@ -90,7 +90,7 @@ class MME_Admin_Page {
                 $value = get_option( 'mme_alert_email', 'holly@bubbledesign.co.uk' );
             }
             echo '<textarea name="mme_alert_emails" rows="3" class="large-text">' . esc_textarea( $value ) . '</textarea>';
-            echo '<p class="description">Comma-separated list of email addresses, e.g. holly@bubbledesign.co.uk, rob@bubbledesign.co.uk</p>';
+            echo '<p class="description">Comma-separated list of email addresses, e.g. holly@bubbledesign.co.uk, another@example.com</p>';
         }, 'mayflower-magnavale', 'mme_alert_section' );
 
         // ---- Register all settings with appropriate sanitize callbacks ----
