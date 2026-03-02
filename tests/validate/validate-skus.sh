@@ -28,7 +28,7 @@ VALID_SKUS=(
     "CSMA1454" "CSMAH1454" "SSGM1454"
     # Packaging materials
     "5OSL" "5OSLI" "5OSLIS" "5OSS" "5OSSI" "5OSSIS"
-    "DRYICE1KG" "ICEPACK"
+    "11DRYICE" "11ICEPACK"
 )
 
 ORDER_CSV=$(ls -t "${ARCHIVE_DIR}"/KING01_ORDERS_*.csv 2>/dev/null | head -1)

@@ -63,11 +63,11 @@ order_id=$(create_tagged_test_order "pkg_frozen_ice" "12CHARSIU:1" "CB41:1")
 csv_content=$(get_csv "$order_id")
 
 if [[ -n "$csv_content" ]]; then
-    # Should contain either DRYICE1KG or ICEPACK
+    # Should contain either 11DRYICE or 11ICEPACK
     HAS_ICE=0
-    echo "$csv_content" | grep -qF "DRYICE1KG" && HAS_ICE=1
-    echo "$csv_content" | grep -qF "ICEPACK" && HAS_ICE=1
-    
+    echo "$csv_content" | grep -qF "11DRYICE" && HAS_ICE=1
+    echo "$csv_content" | grep -qF "11ICEPACK" && HAS_ICE=1
+
     if [[ $HAS_ICE -eq 1 ]]; then
         log_pass "Ice pack included for frozen order"
         TESTS_RUN=$((TESTS_RUN + 1))
@@ -92,8 +92,8 @@ csv_content=$(get_csv "$order_id")
 
 if [[ -n "$csv_content" ]]; then
     HAS_ICE=0
-    echo "$csv_content" | grep -qF "DRYICE1KG" && HAS_ICE=1
-    echo "$csv_content" | grep -qF "ICEPACK" && HAS_ICE=1
+    echo "$csv_content" | grep -qF "11DRYICE" && HAS_ICE=1
+    echo "$csv_content" | grep -qF "11ICEPACK" && HAS_ICE=1
 
     if [[ $HAS_ICE -eq 1 ]]; then
         log_pass "Ice packs included for ambient order (correct — all boxes get ice)"

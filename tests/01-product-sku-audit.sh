@@ -18,8 +18,8 @@ for sku in "${FOOD_SKUS[@]}"; do
     assert_not_empty "SKU exists in WooCommerce: $sku" "$product_id"
 done
 
-# ── Note: Packaging SKUs (5OSL, 5OSS, etc.) and ice-pack SKUs (DRYICE1KG,
-#    ICEPACK) are NOT WooCommerce products.  They are injected by
+# ── Note: Packaging SKUs (5OSL, 5OSS, etc.) and ice-pack SKUs (11DRYICE,
+#    11ICEPACK) are NOT WooCommerce products.  They are injected by
 #    MME_Box_Calculator at export time, so we don't look them up here.
 
 # ── Test: No duplicate SKUs ────────────────────────────────────────────────

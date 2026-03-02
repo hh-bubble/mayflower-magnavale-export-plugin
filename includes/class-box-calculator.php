@@ -40,7 +40,7 @@
  * 5OSSI  = Online Shop Box Small Insert - Top    (1 per small box)
  * 5OSSIS = Online Shop Box Small Insert - Sides  (1 per small box)
  *
- * Ice/dry ice product codes: TBC — need to request from Magnavale
+ * Ice/dry ice product codes: 11DRYICE (dry ice), 11ICEPACK (regular ice)
  *
  * @package MayflowerMagnavaleExport
  */
@@ -69,10 +69,9 @@ class MME_Box_Calculator {
     const PKG_SMALL_INSERT_TOP   = '5OSSI';
     const PKG_SMALL_INSERT_SIDES = '5OSSIS';
 
-    // Ice product codes — PLACEHOLDER: need real codes from Magnavale
-    // TODO: Replace these with actual Magnavale product codes once confirmed
-    const PKG_DRY_ICE     = 'DRYICE1KG';   // Placeholder — request from Magnavale
-    const PKG_REGULAR_ICE = 'ICEPACK';      // Placeholder — request from Magnavale
+    // Ice product codes (confirmed by Magnavale)
+    const PKG_DRY_ICE     = '11DRYICE';
+    const PKG_REGULAR_ICE = '11ICEPACK';
 
     /**
      * Calculate box combination, labels, and ice packs for a single order.

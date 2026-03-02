@@ -86,8 +86,8 @@ fi
 echo ""
 echo "--- Ice Pack Checks ---"
 
-DRY_ICE=${ITEMS["DRYICE1KG"]:-0}
-REGULAR_ICE=${ITEMS["ICEPACK"]:-0}
+DRY_ICE=${ITEMS["11DRYICE"]:-0}
+REGULAR_ICE=${ITEMS["11ICEPACK"]:-0}
 
 if [ "$DRY_ICE" -gt 0 ] || [ "$REGULAR_ICE" -gt 0 ]; then
     echo "  PASS: Ice packs present (dry: ${DRY_ICE}, regular: ${REGULAR_ICE})"
@@ -104,7 +104,7 @@ FOOD_COUNT=0
 for SKU in "${!ITEMS[@]}"; do
     # Skip packaging SKUs
     case "$SKU" in
-        5OSL|5OSLI|5OSLIS|5OSS|5OSSI|5OSSIS|DRYICE1KG|ICEPACK) continue ;;
+        5OSL|5OSLI|5OSLIS|5OSS|5OSSI|5OSSIS|11DRYICE|11ICEPACK) continue ;;
     esac
     ((FOOD_COUNT++))
 done

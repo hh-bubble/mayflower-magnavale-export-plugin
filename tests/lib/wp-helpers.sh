@@ -39,8 +39,8 @@ PACKAGING_SKUS=(
 
 # Ice pack SKUs (auto-added)
 ICE_PACK_SKUS=(
-    "DRYICE1KG"
-    "ICEPACK"
+    "11DRYICE"
+    "11ICEPACK"
 )
 
 # Categories for targeted testing

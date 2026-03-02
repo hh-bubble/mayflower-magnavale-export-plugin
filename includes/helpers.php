@@ -57,6 +57,13 @@ function mme_get_expanded_items( $order ) {
                 ];
             }
         } else {
+            // Safety net: skip WooCommerce Product Bundle parents that weren't
+            // caught by ACF metadata. Bundle parents have auto-generated hash
+            // SKUs (e.g. 39effc28d654) and no Magnavale code.
+            if ( $product->get_type() === 'bundle' ) {
+                continue;
+            }
+
             // Normal product: pass through as-is
             $items[] = [
                 'product' => $product,
