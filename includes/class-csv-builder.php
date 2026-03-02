@@ -142,9 +142,12 @@ class MME_CSV_Builder {
         }
         $county = $this->sanitise_csv_cell( $county );
 
-        // Phone and email — always from billing
-        $phone = $order->get_billing_phone() ?: '';
-        $email = $order->get_billing_email() ?: '';
+        // Postcode — sanitise against CSV injection
+        $postcode = $this->sanitise_csv_cell( $postcode );
+
+        // Phone and email — always from billing, sanitised against CSV injection
+        $phone = $this->sanitise_csv_cell( $order->get_billing_phone() ?: '' );
+        $email = $this->sanitise_csv_cell( $order->get_billing_email() ?: '' );
 
         // Build indexed array matching columns A (0) through S (18)
         return [
