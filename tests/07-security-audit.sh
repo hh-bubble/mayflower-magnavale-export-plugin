@@ -94,8 +94,8 @@ NONCE=$(scan_plugin "
     echo \"verify:\$verify|actions:\$actions\";
 ")
 log_info "  B3: Nonce analysis: $NONCE"
-NONCE_V=$(echo "$NONCE" | grep -oP 'verify:\K[0-9]+')
-NONCE_A=$(echo "$NONCE" | grep -oP 'actions:\K[0-9]+')
+NONCE_V=$(echo "$NONCE" | grep -o 'verify:[0-9]*' | cut -d: -f2)
+NONCE_A=$(echo "$NONCE" | grep -o 'actions:[0-9]*' | cut -d: -f2)
 if [[ "${NONCE_A:-0}" -gt 0 && "${NONCE_V:-0}" == "0" ]]; then
     TESTS_RUN=$((TESTS_RUN + 1)); TESTS_FAILED=$((TESTS_FAILED + 1))
     log_fail "B3: Admin actions WITHOUT nonce verification — CSRF risk"
@@ -191,8 +191,8 @@ FTPS=$(scan_plugin "
     echo \"ssl:\$ssl|plain:\$plain\";
 ")
 log_info "  D1: FTP type: $FTPS"
-SSL_COUNT=$(echo "$FTPS" | grep -oP 'ssl:\K[0-9]+')
-PLAIN_COUNT=$(echo "$FTPS" | grep -oP 'plain:\K[0-9]+')
+SSL_COUNT=$(echo "$FTPS" | grep -o 'ssl:[0-9]*' | cut -d: -f2)
+PLAIN_COUNT=$(echo "$FTPS" | grep -o 'plain:[0-9]*' | cut -d: -f2)
 assert_true "D1: Uses ftp_ssl_connect" "[[ '${SSL_COUNT:-0}' -gt 0 ]]"
 if [[ "${PLAIN_COUNT:-0}" -gt 0 ]]; then
     TESTS_RUN=$((TESTS_RUN + 1)); TESTS_FAILED=$((TESTS_FAILED + 1))
@@ -264,7 +264,7 @@ DIRECT=$(wp_cmd eval "
     }
     echo \"unprotected:\$unprotected\";
 " 2>/dev/null || true)
-UNPROTECTED=$(echo "$DIRECT" | tail -1 | grep -oP 'unprotected:\K[0-9]+')
+UNPROTECTED=$(echo "$DIRECT" | tail -1 | grep -o 'unprotected:[0-9]*' | cut -d: -f2)
 if [[ "${UNPROTECTED:-0}" == "0" ]]; then
     TESTS_RUN=$((TESTS_RUN + 1)); TESTS_PASSED=$((TESTS_PASSED + 1))
     log_pass "F1: All PHP files have direct access prevention"
@@ -285,8 +285,8 @@ REST=$(scan_plugin "
     }
     echo \"routes:\$routes|auth:\$auth\";
 ")
-REST_R=$(echo "$REST" | grep -oP 'routes:\K[0-9]+')
-REST_A=$(echo "$REST" | grep -oP 'auth:\K[0-9]+')
+REST_R=$(echo "$REST" | grep -o 'routes:[0-9]*' | cut -d: -f2)
+REST_A=$(echo "$REST" | grep -o 'auth:[0-9]*' | cut -d: -f2)
 if [[ "${REST_R:-0}" -gt 0 ]]; then
     assert_equals "F2: All REST routes have auth" "$REST_R" "$REST_A"
 else
