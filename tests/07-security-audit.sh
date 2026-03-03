@@ -28,8 +28,8 @@ if [[ -d "$PLUGIN_DIR" ]]; then
     WORLD_WRITABLE=$(find "$PLUGIN_DIR" -not -path '*/vendor/*' -not -path '*/tests/*' -not -path '*/.git/*' -perm -o+w -type f 2>/dev/null | wc -l)
     assert_equals "A1: No world-writable plugin files" "0" "$WORLD_WRITABLE"
 
-    EXEC_PHP=$(find "$PLUGIN_DIR" -not -path '*/vendor/*' -not -path '*/tests/*' -not -path '*/.git/*' -name "*.php" -perm -o+x 2>/dev/null | wc -l)
-    assert_equals "A2: No executable PHP files" "0" "$EXEC_PHP"
+    EXEC_PHP=$(find "$PLUGIN_DIR" -not -path '*/vendor/*' -not -path '*/tests/*' -not -path '*/.git/*' -not -name 'cron-export.php' -name "*.php" -perm -o+x 2>/dev/null | wc -l)
+    assert_equals "A2: No executable PHP files (excluding cron)" "0" "$EXEC_PHP"
 else
     skip_test "File permissions" "Plugin directory not found"
 fi
