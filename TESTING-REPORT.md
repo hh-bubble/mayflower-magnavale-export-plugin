@@ -123,25 +123,4 @@ This plugin automates the daily export of WooCommerce orders from the Mayflower 
 | Large order stress test | Order with 67+ pieces via checkout | Correct multi-box allocation | 🔲 Pending |
 | CSV validation by Magnavale | Send exported CSV files to Magnavale for import test | Files import correctly into Magnavale's warehouse system | 🔲 Awaiting Magnavale |
 
----
-
-## 4. Confirmed Specifications
-
-The following details have been confirmed by both parties and are locked in:
-
-| Setting | Value | Confirmed By |
-|---------|-------|--------------|
-| Account code | KING01 | Magnavale |
-| Courier | DPD | King Asia / Magnavale |
-| DPD service code | 1^12 (Next Day by 12:00) | King Asia |
-| Dry ice product code | 11DRYICE | Magnavale |
-| Regular ice pack code | 11ICEPACK | Magnavale |
-| Bundle handling | No specific Magnavale codes — individual constituent products are used | King Asia |
-| Export schedule | 4:13pm Monday-Friday (server cron, not WordPress pseudo-cron) | Bubble Design |
-| File transfer method | Encrypted FTPS (FTP over TLS) | Magnavale |
-| Order CSV columns | 19 columns (A-S), no header row | Magnavale |
-| Packing CSV columns | 15 columns (A-O), no header row | Magnavale |
-
----
-
 *This is a living document. Statuses will be updated as testing progresses.*
