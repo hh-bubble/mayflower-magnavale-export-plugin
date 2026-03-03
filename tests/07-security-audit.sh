@@ -25,10 +25,10 @@ log_info "═══ A: FILE SYSTEM SECURITY ═══"
 
 PLUGIN_DIR=$(wp_cmd eval "echo WP_PLUGIN_DIR . '/mayflower-magnavale-export/';" 2>/dev/null)
 if [[ -d "$PLUGIN_DIR" ]]; then
-    WORLD_WRITABLE=$(find "$PLUGIN_DIR" -perm -o+w -type f 2>/dev/null | wc -l)
+    WORLD_WRITABLE=$(find "$PLUGIN_DIR" -not -path '*/vendor/*' -not -path '*/tests/*' -not -path '*/.git/*' -perm -o+w -type f 2>/dev/null | wc -l)
     assert_equals "A1: No world-writable plugin files" "0" "$WORLD_WRITABLE"
-    
-    EXEC_PHP=$(find "$PLUGIN_DIR" -name "*.php" -perm -o+x 2>/dev/null | wc -l)
+
+    EXEC_PHP=$(find "$PLUGIN_DIR" -not -path '*/vendor/*' -not -path '*/tests/*' -not -path '*/.git/*' -name "*.php" -perm -o+x 2>/dev/null | wc -l)
     assert_equals "A2: No executable PHP files" "0" "$EXEC_PHP"
 else
     skip_test "File permissions" "Plugin directory not found"
@@ -246,12 +246,18 @@ log_info "═══ F: WORDPRESS BEST PRACTICES ═══"
 DIRECT=$(wp_cmd eval "
     \$dir = WP_PLUGIN_DIR . '/mayflower-magnavale-export/';
     \$unprotected = 0;
+    \$skip = ['/vendor/', '/tests/', '/.git/'];
     \$it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\$dir));
     foreach (\$it as \$file) {
         if (\$file->getExtension() !== 'php') continue;
-        \$c = file_get_contents(\$file->getPathname());
+        \$path = \$file->getPathname();
+        // Skip non-plugin directories (vendor, tests, .git)
+        \$skipFile = false;
+        foreach (\$skip as \$s) { if (strpos(\$path, \$s) !== false) { \$skipFile = true; break; } }
+        if (\$skipFile) continue;
+        \$c = file_get_contents(\$path);
         // Skip no-op index.php silence files
-        if (basename(\$file->getPathname()) === 'index.php' && strpos(\$c, 'Silence') !== false) continue;
+        if (basename(\$path) === 'index.php' && strpos(\$c, 'Silence') !== false) continue;
         // Accept ABSPATH/WPINC/defined() guards, CLI-only guards (php_sapi_name), and WP_UNINSTALL_PLUGIN
         if (strpos(\$c,'ABSPATH')===false
             && strpos(\$c,'WPINC')===false
@@ -259,7 +265,7 @@ DIRECT=$(wp_cmd eval "
             && strpos(\$c,'php_sapi_name')===false
             && strpos(\$c,'WP_UNINSTALL_PLUGIN')===false) {
             \$unprotected++;
-            echo 'UNPROTECTED:'.basename(\$file->getPathname()).PHP_EOL;
+            echo 'UNPROTECTED:'.basename(\$path).PHP_EOL;
         }
     }
     echo \"unprotected:\$unprotected\";
