@@ -122,7 +122,6 @@ This plugin automates the daily export of WooCommerce orders from the Mayflower 
 | Manual order via staging website | Place order through checkout at mayflower.bubblestaging.com | Order appears in next day's export CSV | ✅ Passed |
 | Bundle order via checkout | Order containing a bundle product (e.g. Mayflower Mixes Bundle) | Only individual products appear in CSV, not the bundle itself | ✅ Passed |
 | Mixed order (frozen + ambient) | Order with both frozen and ambient items | All products exported correctly with correct ice pack allocation | ✅ Passed |
-| Guest checkout order | Place order without creating a customer account | Order exports correctly with customer ID = 0 | ✅ Passed |
 | Daily cron verification | Check export logs and output files each day Monday-Friday | CSV files generated and uploaded at 4:13pm | ✅ Passed |
 | Empty day handling | Day with no new orders | Cron runs, logs "no orders", no files uploaded | ✅ Passed |
 | Large order stress test | Order with 67+ pieces via checkout | Correct multi-box allocation | ✅ Passed |
