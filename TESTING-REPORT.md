@@ -8,7 +8,7 @@
 
 ## 1. Overview
 
-This plugin automates the daily export of WooCommerce orders from the Mayflower online shop to Magnavale's warehouse system. Each weekday at 4:13pm, all new orders are compiled into two CSV files (an Order file and a Packing List file), which are then uploaded securely to Magnavale's server via encrypted file transfer. The plugin handles box calculations, ice pack requirements, delivery date scheduling, and packaging material allocation automatically.
+This plugin automates the daily export of WooCommerce orders from the Mayflower online shop to Magnavale's warehouse system. Each weekday at 4:13pm, all new orders are compiled into two CSV files (an Order file and a Packing List file), which are then uploaded securely to a server that Magnavale can access via FTPS. The plugin handles box calculations, ice pack requirements, delivery date scheduling, and packaging material allocation automatically.
 
 ---
 
