@@ -126,4 +126,4 @@ This plugin automates the daily export of WooCommerce orders from the Mayflower 
 | Daily cron verification | Check export logs and output files each day Monday-Friday | CSV files generated and uploaded at 4:13pm | ✅ Passed |
 | Empty day handling | Day with no new orders | Cron runs, logs "no orders", no files uploaded | ✅ Passed |
 | Large order stress test | Order with 67+ pieces via checkout | Correct multi-box allocation | ✅ Passed |
-| CSV validation by Magnavale | Send exported CSV files to Magnavale for import test | Files import correctly into Magnavale's warehouse system | ✅ Passed |
+
