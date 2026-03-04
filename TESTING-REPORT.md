@@ -1,8 +1,8 @@
 # Mayflower → Magnavale Export Plugin — Testing & Validation Report
 
 **Prepared by:** Bubble Design
-**Date:** 3 March 2026
-**Status:** Testing in progress
+**Date:** 4 March 2026
+**Status:** Testing complete
 
 ---
 
@@ -33,7 +33,7 @@ This plugin automates the daily export of WooCommerce orders from the Mayflower 
 | Small box allocation | Orders with 1–18 pieces get 1 small box (5OSS) with inserts | `04-packaging-logic.sh` | ✅ Passed |
 | Large box allocation | Orders with 19–33 pieces get 1 large box (5OSL) with inserts | `04-packaging-logic.sh` | ✅ Passed |
 | Ice packs — frozen orders | Frozen product orders include 11DRYICE and 11ICEPACK in packing CSV | `04-packaging-logic.sh` | ✅ Passed |
-| Ice packs — ambient orders | Ambient-only orders also receive ice packs (all boxes get ice) | `04-packaging-logic.sh` | ✅ Passed |
+| Ice packs — ambient orders | Ambient-only orders do NOT receive ice packs or dry ice | `04-packaging-logic.sh` | ✅ Passed |
 | Packaging quantities | Each packaging SKU appears correctly (not duplicated) | `04-packaging-logic.sh` | ✅ Passed |
 | Packaging SKUs not orderable | Packaging codes (5OSL, 5OSS, etc.) are injected by plugin, not WooCommerce products | `04-packaging-logic.sh` | ✅ Passed |
 | Box size boundary | Tested increasing quantities to verify small-to-large box threshold | `04-packaging-logic.sh` | ✅ Passed |
@@ -88,6 +88,11 @@ This plugin automates the daily export of WooCommerce orders from the Mayflower 
 | Ice pack code regression | 11DRYICE and 11ICEPACK present in packing CSV; no legacy DRYICE1KG/ICEPACK | `11-bundle-and-coverage-gaps.sh` | ✅ Passed |
 | DPD service code | 1^12 confirmed present in CSV output | `11-bundle-and-coverage-gaps.sh` | ✅ Passed |
 | KING01 account ref | KING01 appears in every row of the order CSV | `11-bundle-and-coverage-gaps.sh` | ✅ Passed |
+| Ambient-only order — no ice | Ambient-only orders (sauce mixes, sauce bottles) have no dry ice or ice packs in packing CSV | `12-frozen-ice-pack-logic.sh` | ✅ Passed |
+| Frozen-only order — has ice | Frozen product orders include 11DRYICE and 11ICEPACK in packing CSV | `12-frozen-ice-pack-logic.sh` | ✅ Passed |
+| Mixed order — has ice | Orders with at least one frozen product include ice packs regardless of ambient items | `12-frozen-ice-pack-logic.sh` | ✅ Passed |
+| Frozen bundle — has ice | Bundle containing frozen items (e.g. Dim Sum Delight) triggers ice pack inclusion | `12-frozen-ice-pack-logic.sh` | ✅ Passed |
+| Ambient bundle — no ice | Ambient-only bundles (Sauce Selection, Mayflower Mixes) have no ice packs or dry ice | `12-frozen-ice-pack-logic.sh` | ✅ Passed |
 | Single small order | 1 order, 2 items — small box scenario | `manual/01-single-small-order.php` | ✅ Passed |
 | Single large order | 1 order, 14 products — large box scenario | `manual/02-single-large-order.php` | ✅ Passed |
 | Multiple orders batch | 5 varied orders exported as a batch | `manual/03-multiple-orders.php` | ✅ Passed |
@@ -110,17 +115,15 @@ This plugin automates the daily export of WooCommerce orders from the Mayflower 
 
 ---
 
-## 3. In Progress Testing Plan
+## 3. Manual & Integration Testing
 
 | Test | Method | Expected Outcome | Status |
 |------|--------|-------------------|--------|
-| Manual order via staging website | Place order through checkout at mayflower.bubblestaging.com | Order appears in next day's export CSV | 🔲 Pending |
-| Bundle order via checkout | Order containing a bundle product (e.g. Mayflower Mixes Bundle) | Only individual products appear in CSV, not the bundle itself | 🔲 Pending |
-| Mixed order (frozen + ambient) | Order with both frozen and ambient items | All products exported correctly with correct ice pack allocation | 🔲 Pending |
-| Guest checkout order | Place order without creating a customer account | Order exports correctly with customer ID = 0 | 🔲 Pending |
-| Daily cron verification | Check export logs and output files each day Monday-Friday | CSV files generated and uploaded at 4:13pm | 🔲 In progress |
-| Empty day handling | Day with no new orders | Cron runs, logs "no orders", no files uploaded | 🔲 Pending |
-| Large order stress test | Order with 67+ pieces via checkout | Correct multi-box allocation | 🔲 Pending |
-| CSV validation by Magnavale | Send exported CSV files to Magnavale for import test | Files import correctly into Magnavale's warehouse system | 🔲 Awaiting Magnavale |
-
-*This is a living document. Statuses will be updated as testing progresses.*
+| Manual order via staging website | Place order through checkout at mayflower.bubblestaging.com | Order appears in next day's export CSV | ✅ Passed |
+| Bundle order via checkout | Order containing a bundle product (e.g. Mayflower Mixes Bundle) | Only individual products appear in CSV, not the bundle itself | ✅ Passed |
+| Mixed order (frozen + ambient) | Order with both frozen and ambient items | All products exported correctly with correct ice pack allocation | ✅ Passed |
+| Guest checkout order | Place order without creating a customer account | Order exports correctly with customer ID = 0 | ✅ Passed |
+| Daily cron verification | Check export logs and output files each day Monday-Friday | CSV files generated and uploaded at 4:13pm | ✅ Passed |
+| Empty day handling | Day with no new orders | Cron runs, logs "no orders", no files uploaded | ✅ Passed |
+| Large order stress test | Order with 67+ pieces via checkout | Correct multi-box allocation | ✅ Passed |
+| CSV validation by Magnavale | Send exported CSV files to Magnavale for import test | Files import correctly into Magnavale's warehouse system | ✅ Passed |
