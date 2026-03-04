@@ -82,11 +82,11 @@ else
 fi
 
 # ══════════════════════════════════════════════════════════════════════════
-# TEST: Ice packs present for ambient-only orders (all boxes get ice)
+# TEST: No ice packs for ambient-only orders
 # ══════════════════════════════════════════════════════════════════════════
-log_info "Testing ice packs present for ambient-only orders (all boxes get ice)..."
+log_info "Testing no ice packs for ambient-only orders..."
 set_random_address
-order_id=$(create_tagged_test_order "pkg_ambient_ice" \
+order_id=$(create_tagged_test_order "pkg_ambient_no_ice" \
     "CSM12255A:2" "SSGM1454:1" "HSS12180:1")
 csv_content=$(get_csv "$order_id")
 
@@ -95,14 +95,14 @@ if [[ -n "$csv_content" ]]; then
     echo "$csv_content" | grep -qF "11DRYICE" && HAS_ICE=1
     echo "$csv_content" | grep -qF "11ICEPACK" && HAS_ICE=1
 
-    if [[ $HAS_ICE -eq 1 ]]; then
-        log_pass "Ice packs included for ambient order (correct — all boxes get ice)"
+    if [[ $HAS_ICE -eq 0 ]]; then
+        log_pass "No ice packs for ambient-only order (correct)"
         TESTS_RUN=$((TESTS_RUN + 1))
         TESTS_PASSED=$((TESTS_PASSED + 1))
     else
         TESTS_RUN=$((TESTS_RUN + 1))
         TESTS_FAILED=$((TESTS_FAILED + 1))
-        log_fail "No ice pack found in ambient order packing list"
+        log_fail "Ice packs found in ambient-only order (should not have any)"
     fi
 else
     skip_test "Ambient ice pack check" "CSV generation unavailable"

@@ -90,13 +90,22 @@ class MME_Box_Calculator {
     public function calculate( $order ) {
 
         // ---------------------------------------------------------------
-        // Step 1: Count total pieces in this order
+        // Step 1: Count total pieces and check for frozen products
         // ---------------------------------------------------------------
         // "1 piece" = 1 unit of any product (quantity from the line item)
         $total_pieces = 0;
+        $has_frozen   = false;
 
         foreach ( mme_get_expanded_items( $order ) as $expanded ) {
             $total_pieces += $expanded['qty'];
+
+            // Check is_frozen ACF field (only until we find the first frozen item)
+            if ( ! $has_frozen ) {
+                $product_id = $expanded['product']->get_id();
+                if ( get_post_meta( $product_id, 'is_frozen', true ) ) {
+                    $has_frozen = true;
+                }
+            }
         }
 
         // Edge case: if somehow an order has 0 pieces, return empty
@@ -110,10 +119,16 @@ class MME_Box_Calculator {
         $boxes = $this->determine_boxes( $total_pieces );
 
         // ---------------------------------------------------------------
-        // Step 3: Calculate ice packs based on box combination
+        // Step 3: Calculate ice packs (only for orders with frozen products)
         // ---------------------------------------------------------------
-        $dry_ice     = ( $boxes['small'] * self::SMALL_DRY_ICE )     + ( $boxes['large'] * self::LARGE_DRY_ICE );
-        $regular_ice = ( $boxes['small'] * self::SMALL_REGULAR_ICE ) + ( $boxes['large'] * self::LARGE_REGULAR_ICE );
+        // Ambient-only orders do NOT get ice packs or dry ice.
+        $dry_ice     = 0;
+        $regular_ice = 0;
+
+        if ( $has_frozen ) {
+            $dry_ice     = ( $boxes['small'] * self::SMALL_DRY_ICE )     + ( $boxes['large'] * self::LARGE_DRY_ICE );
+            $regular_ice = ( $boxes['small'] * self::SMALL_REGULAR_ICE ) + ( $boxes['large'] * self::LARGE_REGULAR_ICE );
+        }
 
         // ---------------------------------------------------------------
         // Step 4: Labels — 1 per box
